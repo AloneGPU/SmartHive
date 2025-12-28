@@ -38,7 +38,6 @@ const mapHiveDataToBeehiveData = (row: any): BeehiveData => {
     weight: row.weight !== null && row.weight !== undefined ? row.weight : 0,
     beesIn: row.beesIn !== null && row.beesIn !== undefined ? row.beesIn : 0,
     beesOut: row.beesOut !== null && row.beesOut !== undefined ? row.beesOut : 0,
-    batteryLevel: row.batteryLevel !== null && row.batteryLevel !== undefined ? row.batteryLevel : 0,
     hornetsDetected: row.hornetsDetected !== null && row.hornetsDetected !== undefined ? row.hornetsDetected : 0,
     latitude: row.latitude !== null && row.latitude !== undefined ? row.latitude : undefined,
     longitude: row.longitude !== null && row.longitude !== undefined ? row.longitude : undefined
@@ -94,8 +93,8 @@ export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<Beehiv
 export const insertBeehiveData = async (data: Omit<BeehiveData, 'timestamp'>): Promise<void> => {
   try {
     await pool.execute(
-      'INSERT INTO hive_data (timestamp, temperature, humidity, weight, beesIn, beesOut, batteryLevel, hornetsDetected, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [Date.now(), data.temperature, data.humidity, data.weight, data.beesIn, data.beesOut, data.batteryLevel, data.hornetsDetected, data.latitude, data.longitude]
+      'INSERT INTO hive_data (timestamp, temperature, humidity, weight, beesIn, beesOut, hornetsDetected, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [Date.now(), data.temperature, data.humidity, data.weight, data.beesIn, data.beesOut, data.hornetsDetected, data.latitude, data.longitude]
     );
   } catch (error) {
     console.error('Error inserting beehive data:', error);
@@ -118,7 +117,6 @@ export const initializeDatabase = async (): Promise<void> => {
         weight FLOAT NOT NULL,
         beesIn INT NOT NULL,
         beesOut INT NOT NULL,
-        batteryLevel INT NOT NULL,
         hornetsDetected INT NOT NULL,
         latitude FLOAT,
         longitude FLOAT,

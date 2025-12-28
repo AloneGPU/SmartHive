@@ -16,7 +16,6 @@ export interface BeehiveData {
   weight: number; // kg
   beesIn: number; // Count
   beesOut: number; // Count
-  batteryLevel: number; // Percentage
   hornetsDetected: number; // Count from YOLO
   latitude?: number; // GPS latitude
   longitude?: number; // GPS longitude

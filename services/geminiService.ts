@@ -21,7 +21,7 @@ export const analyzeHiveHealth = async (
     
     实时指标:
     - 环境: 温度 ${data.temperature}°C, 湿度 ${data.humidity}%
-    - 生产: 重量 ${data.weight}kg, 电池 ${Math.round(data.batteryLevel)}%
+    - 生产: 重量 ${data.weight}kg
     - behavior: 入巢 ${data.beesIn}, 出巢 ${data.beesOut}, 差值 ${data.beesIn - data.beesOut}
     
     分析重点:

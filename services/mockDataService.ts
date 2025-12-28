@@ -8,7 +8,6 @@ let currentData: BeehiveData = {
   weight: 24.2,
   beesIn: 1240,
   beesOut: 1150,
-  batteryLevel: 88,
   hornetsDetected: 0,
 };
 
@@ -26,7 +25,6 @@ export const getSimulatedData = (): BeehiveData => {
     weight: Number((currentData.weight + randomFactor(-0.01, 0.05)).toFixed(2)), // Weight tends to go up slightly with honey
     beesIn: currentData.beesIn + Math.floor(randomFactor(0, 15)),
     beesOut: currentData.beesOut + Math.floor(randomFactor(0, 15)),
-    batteryLevel: Math.max(0, currentData.batteryLevel - 0.01),
     hornetsDetected: detectHornet ? 1 : 0,
   };
 

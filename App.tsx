@@ -16,7 +16,26 @@ function App() {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [hiveData, setHiveData] = useState<BeehiveData | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
-  const [location] = useState<LocationData>({ latitude: 30.5728, longitude: 104.0668, address: '数字化蜂场 - MySQL 集成节点' });
+  // 基于 GPS 坐标更新位置信息
+  const [location, setLocation] = useState<LocationData>({
+    latitude: 30.5728, 
+    longitude: 104.0668, 
+    address: '数字化蜂场 - MySQL 集成节点'
+  });
+  
+  // 当获取到新的 GPS 数据时，更新位置信息
+  useEffect(() => {
+    if (hiveData?.latitude !== undefined && hiveData?.longitude !== undefined) {
+      // 这里可以添加地理编码 API 调用，将 GPS 坐标转换为实际地址
+      // 由于没有地理编码服务，我们使用坐标来生成一个动态地址
+      const newAddress = `蜂箱位置 - ${hiveData.latitude.toFixed(4)}, ${hiveData.longitude.toFixed(4)}`;
+      setLocation(prev => ({
+        latitude: hiveData.latitude,
+        longitude: hiveData.longitude,
+        address: newAddress
+      }));
+    }
+  }, [hiveData?.latitude, hiveData?.longitude]);
   
   const [aiConfig, setAiConfig] = useState<CustomAIConfig>(() => {
     const saved = localStorage.getItem('SMART_HIVE_AI_CONFIG');

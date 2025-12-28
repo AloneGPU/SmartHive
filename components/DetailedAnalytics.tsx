@@ -18,7 +18,6 @@ export const DetailedAnalytics: React.FC<Props> = ({ history, currentData }) => 
     { subject: '生产效率', A: currentData.weight > 20 ? 85 : 40, fullMark: 100 },
     { subject: '控温能力', A: currentData.temperature > 33 && currentData.temperature < 36 ? 95 : 60, fullMark: 100 },
     { subject: '归巢防御', A: (currentData.beesIn / (currentData.beesOut || 1)) * 100, fullMark: 100 },
-    { subject: '电力稳定性', A: currentData.batteryLevel, fullMark: 100 },
   ];
 
   // 构造出勤分布图数据 (模拟数据处理)

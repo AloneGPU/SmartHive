@@ -1,5 +1,10 @@
 
-import { BeehiveData } from '../types';
+import { BeehiveData, ConnectionMode } from '../types';
+import {
+  testDatabaseConnection,
+  fetchLiveHiveDataFromDB,
+  fetchHistoryDataFromDB
+} from './databaseService';
 
 /**
  * 带有授权头的数据请求
@@ -13,7 +18,11 @@ const authorizedFetch = async (url: string, token: string) => {
   });
 };
 
-export const fetchLiveHiveData = async (baseUrl: string, token: string): Promise<BeehiveData> => {
+export const fetchLiveHiveData = async (baseUrl: string, token: string, mode: ConnectionMode = 'CLOUD'): Promise<BeehiveData> => {
+  if (mode === 'DATABASE') {
+    return fetchLiveHiveDataFromDB();
+  }
+
   try {
     const response = await authorizedFetch(`${baseUrl}/api/beehive/latest`, token);
     if (!response.ok) throw new Error('网关响应异常');
@@ -33,7 +42,11 @@ export const fetchLiveHiveData = async (baseUrl: string, token: string): Promise
   }
 };
 
-export const fetchHistoryData = async (baseUrl: string, token: string, limit: number = 40): Promise<any[]> => {
+export const fetchHistoryData = async (baseUrl: string, token: string, limit: number = 40, mode: ConnectionMode = 'CLOUD'): Promise<any[]> => {
+  if (mode === 'DATABASE') {
+    return fetchHistoryDataFromDB(limit);
+  }
+
   try {
     const response = await authorizedFetch(`${baseUrl}/api/beehive/history?limit=${limit}`, token);
     if (!response.ok) throw new Error('历史记录加载失败');
@@ -44,9 +57,13 @@ export const fetchHistoryData = async (baseUrl: string, token: string, limit: nu
 };
 
 /**
- * 测试后端网关连通性
+ * 测试后端连接连通性
  */
-export const testGatewayConnection = async (baseUrl: string, token: string): Promise<boolean> => {
+export const testConnection = async (baseUrl: string, token: string, mode: ConnectionMode = 'CLOUD'): Promise<boolean> => {
+  if (mode === 'DATABASE') {
+    return testDatabaseConnection();
+  }
+
   try {
     const response = await authorizedFetch(`${baseUrl}/api/health`, token);
     return response.ok;

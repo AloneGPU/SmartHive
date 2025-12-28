@@ -18,6 +18,8 @@ export interface BeehiveData {
   beesOut: number; // Count
   batteryLevel: number; // Percentage
   hornetsDetected: number; // Count from YOLO
+  latitude?: number; // GPS latitude
+  longitude?: number; // GPS longitude
 }
 
 export interface AIAnalysisResult {

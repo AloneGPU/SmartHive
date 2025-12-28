@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+import * as mysql from 'mysql2/promise';
 import { BeehiveData } from '../types';
 
 // Database configuration
@@ -32,14 +32,16 @@ export const testDatabaseConnection = async (): Promise<boolean> => {
  */
 const mapHiveDataToBeehiveData = (row: any): BeehiveData => {
   return {
-    timestamp: row.timestamp || Date.now(),
-    temperature: row.temperature || 0,
-    humidity: row.humidity || 0,
-    weight: row.weight || 0,
-    beesIn: row.beesIn || 0,
-    beesOut: row.beesOut || 0,
-    batteryLevel: row.batteryLevel || 0,
-    hornetsDetected: row.hornetsDetected || 0
+    timestamp: row.timestamp !== null && row.timestamp !== undefined ? row.timestamp : Date.now(),
+    temperature: row.temperature !== null && row.temperature !== undefined ? row.temperature : 0,
+    humidity: row.humidity !== null && row.humidity !== undefined ? row.humidity : 0,
+    weight: row.weight !== null && row.weight !== undefined ? row.weight : 0,
+    beesIn: row.beesIn !== null && row.beesIn !== undefined ? row.beesIn : 0,
+    beesOut: row.beesOut !== null && row.beesOut !== undefined ? row.beesOut : 0,
+    batteryLevel: row.batteryLevel !== null && row.batteryLevel !== undefined ? row.batteryLevel : 0,
+    hornetsDetected: row.hornetsDetected !== null && row.hornetsDetected !== undefined ? row.hornetsDetected : 0,
+    latitude: row.latitude !== null && row.latitude !== undefined ? row.latitude : undefined,
+    longitude: row.longitude !== null && row.longitude !== undefined ? row.longitude : undefined
   };
 };
 
@@ -92,8 +94,8 @@ export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<Beehiv
 export const insertBeehiveData = async (data: Omit<BeehiveData, 'timestamp'>): Promise<void> => {
   try {
     await pool.execute(
-      'INSERT INTO hive_data (timestamp, temperature, humidity, weight, beesIn, beesOut, batteryLevel, hornetsDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [Date.now(), data.temperature, data.humidity, data.weight, data.beesIn, data.beesOut, data.batteryLevel, data.hornetsDetected]
+      'INSERT INTO hive_data (timestamp, temperature, humidity, weight, beesIn, beesOut, batteryLevel, hornetsDetected, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [Date.now(), data.temperature, data.humidity, data.weight, data.beesIn, data.beesOut, data.batteryLevel, data.hornetsDetected, data.latitude, data.longitude]
     );
   } catch (error) {
     console.error('Error inserting beehive data:', error);
@@ -118,6 +120,8 @@ export const initializeDatabase = async (): Promise<void> => {
         beesOut INT NOT NULL,
         batteryLevel INT NOT NULL,
         hornetsDetected INT NOT NULL,
+        latitude FLOAT,
+        longitude FLOAT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;

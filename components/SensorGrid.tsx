@@ -10,13 +10,15 @@ interface Props {
 export const SensorGrid: React.FC<Props> = ({ data, location }) => {
   const netBees = data.beesIn - data.beesOut;
   const tempStatus = data.temperature > 36 || data.temperature < 31 ? 'warning' : 'optimal';
+  
+  // 优先使用数据中的GPS信息，否则使用传入的location对象
+  const displayLatitude = data.latitude !== undefined ? data.latitude : location.latitude;
+  const displayLongitude = data.longitude !== undefined ? data.longitude : location.longitude;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {/* Temperature */}
-      <div className={`p-5 rounded-2xl shadow-sm border transition-colors ${
-        tempStatus === 'warning' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'
-      }`}>
+      <div className={`p-5 rounded-2xl shadow-sm border transition-colors ${tempStatus === 'warning' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}>
         <div className="flex items-center justify-between mb-3 text-gray-400">
           <Thermometer size={18} />
           {tempStatus === 'warning' && <AlertCircle size={14} className="text-red-500 animate-pulse" />}
@@ -79,6 +81,34 @@ export const SensorGrid: React.FC<Props> = ({ data, location }) => {
         </div>
       </div>
 
+      {/* GPS Information */}
+      <div className="p-5 rounded-2xl shadow-sm border bg-white border-gray-100">
+        <div className="flex items-center mb-3 text-blue-500">
+          <MapPin size={18} />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">GPS 纬度</span>
+          <div className="flex items-end gap-1">
+            <span className="text-2xl font-black text-gray-900">{displayLatitude.toFixed(6)}</span>
+            <span className="text-xs text-gray-400 mb-1 font-bold">°</span>
+          </div>
+        </div>
+      </div>
+
+      {/* GPS Information */}
+      <div className="p-5 rounded-2xl shadow-sm border bg-white border-gray-100">
+        <div className="flex items-center mb-3 text-blue-500">
+          <MapPin size={18} />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">GPS 经度</span>
+          <div className="flex items-end gap-1">
+            <span className="text-2xl font-black text-gray-900">{displayLongitude.toFixed(6)}</span>
+            <span className="text-xs text-gray-400 mb-1 font-bold">°</span>
+          </div>
+        </div>
+      </div>
+
        {/* Location Info */}
        <div className="col-span-2 md:col-span-4 p-4 rounded-2xl shadow-sm border bg-indigo-900 border-indigo-800 flex items-center justify-between text-white">
          <div className="flex items-center gap-4">
@@ -88,7 +118,7 @@ export const SensorGrid: React.FC<Props> = ({ data, location }) => {
              <div>
                  <p className="text-[10px] text-indigo-300 font-black uppercase tracking-widest">设备地理坐标</p>
                  <p className="text-sm font-bold tracking-tight">{location.address || '正在通过运营商基站定位...'}</p>
-                 <p className="text-[10px] opacity-60 font-mono mt-0.5">{location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}</p>
+                 <p className="text-[10px] opacity-60 font-mono mt-0.5">{displayLatitude.toFixed(6)}, {displayLongitude.toFixed(6)}</p>
              </div>
          </div>
          <div className="hidden sm:flex flex-col items-end">

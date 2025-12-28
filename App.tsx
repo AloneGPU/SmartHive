@@ -10,7 +10,7 @@ import { EventLog } from './components/EventLog';
 import { fetchLiveHiveData, fetchHistoryData } from './services/dataService';
 import { analyzeHiveHealth } from './services/geminiService';
 import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig } from './types';
-import { Database, ShieldCheck, Zap, Globe, Cpu, Server } from 'lucide-react';
+import { Database, ShieldCheck, Zap, Globe, Cpu, Server, RefreshCw } from 'lucide-react';
 
 function App() {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
@@ -20,7 +20,7 @@ function App() {
   
   const [aiConfig, setAiConfig] = useState<CustomAIConfig>(() => {
     const saved = localStorage.getItem('SMART_HIVE_AI_CONFIG');
-    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'gemini-3-flash-preview', apiBaseUrl: 'http://localhost:3000', apiToken: '', isActive: false };
+    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'gemini-3-flash-preview', apiBaseUrl: 'http://localhost:3001', apiToken: 'test-token', isActive: true };
   });
 
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
@@ -35,23 +35,32 @@ function App() {
 
   const handleSync = async () => {
     setConnectionStatus('connecting');
-    for(let i = 0; i < steps.length; i++) {
-      setConnectStep(i);
-      await new Promise(r => setTimeout(r, 600));
-    }
-
-    const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
-    const history = await fetchHistoryData(aiConfig.apiBaseUrl, aiConfig.apiToken);
     
-    setHiveData(data);
-    setHistoryData(history);
-    setConnectionStatus('connected');
+    try {
+      // Skip the animation steps for faster connection
+      const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
+      const history = await fetchHistoryData(aiConfig.apiBaseUrl, aiConfig.apiToken);
+      
+      setHiveData(data);
+      setHistoryData(history);
+      setConnectionStatus('connected');
+    } catch (error) {
+      console.error('Connection failed:', error);
+      setConnectionStatus('disconnected');
+    }
   };
 
   const handleDisconnect = () => {
     setConnectionStatus('disconnected');
     setHiveData(null);
   };
+
+  // Auto-connect when config is active
+  useEffect(() => {
+    if (aiConfig.isActive && connectionStatus === 'disconnected') {
+      handleSync();
+    }
+  }, [aiConfig.isActive]);
 
   useEffect(() => {
     if (connectionStatus !== 'connected') return;
@@ -77,13 +86,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16 font-sans">
-      {connectionStatus === 'connected' && (
-        <ConnectionHeader 
-          status={connectionStatus}
-          onSync={handleSync}
-          onDisconnect={handleDisconnect}
-        />
-      )}
+      {/* Always show connection header for easy access to settings */}
+      <ConnectionHeader 
+        status={connectionStatus}
+        onSync={handleSync}
+        onDisconnect={handleDisconnect}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
         {connectionStatus === 'connected' && hiveData ? (
@@ -128,53 +136,38 @@ function App() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[85vh]">
-            <div className="bg-white p-10 md:p-14 rounded-[3rem] shadow-2xl border border-gray-100 max-w-2xl w-full text-center relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-600 to-indigo-400"></div>
+          <div className="flex flex-col items-center justify-center min-h-[70vh]">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 max-w-md w-full text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">连接状态</h2>
+              <div className="mb-6">
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
+                  connectionStatus === 'connecting' ? 'bg-blue-100' : 'bg-gray-100'
+                }`}>
+                  {connectionStatus === 'connecting' ? (
+                    <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+                  ) : (
+                    <Database className="w-8 h-8 text-gray-500" />
+                  )}
+                </div>
+                <p className="text-gray-600 mb-2">
+                  {connectionStatus === 'connecting' ? '正在连接到后端...' : '未连接到后端'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {connectionStatus === 'connecting' ? '请稍候...' : '系统将自动尝试连接'}
+                </p>
+              </div>
               
-              <div className="mb-8 flex justify-center">
-                <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                  <Database size={40} />
-                </div>
-              </div>
-
-              <h1 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter">
-                SmartHive <span className="text-indigo-600">SQL Bridge</span>
-              </h1>
-              <p className="text-gray-500 mb-10 font-medium px-4">
-                已进入 MySQL 数据驱动模式。系统将通过您定义的网关地址进行鉴权并拉取传感器时序数据。
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center">
-                  <Server size={20} className="text-indigo-500 mb-2" />
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">后端适配器</span>
-                  <span className="text-xs font-bold text-gray-800">REST API / JSON</span>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center">
-                  <ShieldCheck size={20} className="text-purple-500 mb-2" />
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">认证协议</span>
-                  <span className="text-xs font-bold text-gray-800">Bearer Token</span>
-                </div>
-              </div>
-
               <button 
                 onClick={handleSync}
-                disabled={connectionStatus === 'connecting' || !aiConfig.isActive}
-                className={`w-full py-5 text-xl font-bold rounded-2xl transition-all shadow-xl active:scale-95 ${
-                  aiConfig.isActive 
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100' 
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                disabled={connectionStatus === 'connecting'}
+                className={`w-full py-3 font-bold rounded-xl transition-all ${
+                  connectionStatus === 'connecting' 
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md active:scale-95'
                 }`}
               >
-                {!aiConfig.isActive ? '请先配置集成参数' : (connectionStatus === 'connecting' ? steps[connectStep] : '验证凭据并建立连接')}
+                {connectionStatus === 'connecting' ? '连接中...' : '手动连接'}
               </button>
-              
-              {!aiConfig.isActive && (
-                <p className="mt-4 text-xs text-orange-500 font-bold animate-pulse">
-                  ⚠ 提示：请点击右上角设置图标填写您的 API 接口信息
-                </p>
-              )}
             </div>
           </div>
         )}

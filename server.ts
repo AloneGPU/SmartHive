@@ -65,7 +65,13 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/beehive/latest', verifyToken, async (req, res) => {
   try {
     const data = await fetchLiveHiveDataFromDB();
-    res.status(200).json(data);
+    if (data === null) {
+      res.status(404).json({
+        message: 'No beehive data found in database'
+      });
+    } else {
+      res.status(200).json(data);
+    }
   } catch (error) {
     res.status(500).json({
       message: 'Failed to fetch live beehive data',

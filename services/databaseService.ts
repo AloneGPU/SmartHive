@@ -46,9 +46,9 @@ const mapHiveDataToBeehiveData = (row: any): BeehiveData => {
 /**
  * Fetch live beehive data from database
  */
-export const fetchLiveHiveDataFromDB = async (): Promise<BeehiveData> => {
+export const fetchLiveHiveDataFromDB = async (): Promise<BeehiveData | null> => {
   try {
-    // Try to get data from hive_data table first
+    // Only query hive_data table, beehive_data table might not exist
     let [rows] = await pool.execute(
       'SELECT * FROM hive_data ORDER BY id DESC LIMIT 1'
     );
@@ -57,26 +57,8 @@ export const fetchLiveHiveDataFromDB = async (): Promise<BeehiveData> => {
       return mapHiveDataToBeehiveData(rows[0]);
     }
     
-    // Fallback to beehive_data table if hive_data doesn't have data
-    [rows] = await pool.execute(
-      'SELECT * FROM beehive_data ORDER BY id DESC LIMIT 1'
-    );
-    
-    if (Array.isArray(rows) && rows.length > 0) {
-      return mapHiveDataToBeehiveData(rows[0]);
-    }
-    
-    // Return mock data if no records found
-    return {
-      timestamp: Date.now(),
-      temperature: 34.8,
-      humidity: 52,
-      weight: 25.1,
-      beesIn: 1350,
-      beesOut: 1200,
-      batteryLevel: 98,
-      hornetsDetected: 0
-    };
+    // Return null if no records found (no mock data)
+    return null;
   } catch (error) {
     console.error('Error fetching live beehive data:', error);
     throw error;
@@ -88,7 +70,7 @@ export const fetchLiveHiveDataFromDB = async (): Promise<BeehiveData> => {
  */
 export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<BeehiveData[]> => {
   try {
-    // Use direct query instead of prepared statement for better compatibility
+    // Only query hive_data table, beehive_data table might not exist
     const query = `SELECT * FROM hive_data ORDER BY id DESC LIMIT ${limit}`;
     const [rows] = await pool.execute(query);
     
@@ -96,11 +78,8 @@ export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<Beehiv
       return rows.map(mapHiveDataToBeehiveData);
     }
     
-    // Fallback to beehive_data table if hive_data doesn't have data
-    const fallbackQuery = `SELECT * FROM beehive_data ORDER BY id DESC LIMIT ${limit}`;
-    const [fallbackRows] = await pool.execute(fallbackQuery);
-    
-    return (fallbackRows as any[]).map(mapHiveDataToBeehiveData);
+    // Return empty array if no data found (no mock data)
+    return [];
   } catch (error) {
     console.error('Error fetching history data:', error);
     throw error;

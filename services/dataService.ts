@@ -13,23 +13,21 @@ const authorizedFetch = async (url: string, token: string) => {
   });
 };
 
-export const fetchLiveHiveData = async (baseUrl: string, token: string, mode: ConnectionMode = 'CLOUD'): Promise<BeehiveData> => {
+export const fetchLiveHiveData = async (baseUrl: string, token: string, mode: ConnectionMode = 'CLOUD'): Promise<BeehiveData | null> => {
   try {
     const response = await authorizedFetch(`${baseUrl}/api/beehive/latest`, token);
-    if (!response.ok) throw new Error('网关响应异常');
+    if (!response.ok) {
+      if (response.status === 404) {
+        // 返回 null 表示数据库中没有数据
+        return null;
+      }
+      throw new Error('网关响应异常');
+    }
     return await response.json();
   } catch (error) {
-    console.warn('正在使用演示数据模式...', error);
-    return {
-      timestamp: Date.now(),
-      temperature: 34.8,
-      humidity: 52,
-      weight: 25.1,
-      beesIn: 1350,
-      beesOut: 1200,
-      batteryLevel: 98,
-      hornetsDetected: 0,
-    };
+    // No longer return mock data when database has no data
+    console.error('获取数据失败:', error);
+    return null;
   }
 };
 

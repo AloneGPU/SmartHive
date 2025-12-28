@@ -43,6 +43,7 @@ function App() {
       
       setHiveData(data);
       setHistoryData(history);
+      // 无论是否有数据，只要连接成功就保持连接状态
       setConnectionStatus('connected');
     } catch (error) {
       console.error('Connection failed:', error);
@@ -94,46 +95,61 @@ function App() {
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
-        {connectionStatus === 'connected' && hiveData ? (
+        {connectionStatus === 'connected' ? (
           <div className="animate-in fade-in slide-in-from-top-4 duration-700 space-y-8">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-               <div className="xl:col-span-3">
-                 <SensorGrid data={hiveData} location={location} />
-               </div>
-               <div className="xl:col-span-1">
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col justify-between group hover:shadow-md transition-shadow">
-                    <div>
-                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">SQL 同步状态</p>
-                        <p className="text-3xl font-black text-indigo-600">实时就绪</p>
-                        <p className="text-[10px] text-green-500 font-bold mt-1">Latency: 24ms</p>
-                    </div>
-                    <div className="mt-6 pt-6 border-t border-gray-50">
-                        <div className="flex justify-between items-center mb-2">
-                           <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">数据吞吐量</p>
+            {hiveData ? (
+              <>
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                   <div className="xl:col-span-3">
+                     <SensorGrid data={hiveData} location={location} />
+                   </div>
+                   <div className="xl:col-span-1">
+                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col justify-between group hover:shadow-md transition-shadow">
+                        <div>
+                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">SQL 同步状态</p>
+                            <p className="text-3xl font-black text-indigo-600">实时就绪</p>
+                            <p className="text-[10px] text-green-500 font-bold mt-1">Latency: 24ms</p>
                         </div>
-                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-500 w-[45%] shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
+                        <div className="mt-6 pt-6 border-t border-gray-50">
+                            <div className="flex justify-between items-center mb-2">
+                               <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">数据吞吐量</p>
+                            </div>
+                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-indigo-500 w-[45%] shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
+                            </div>
                         </div>
-                    </div>
-                 </div>
-               </div>
-            </div>
+                     </div>
+                   </div>
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-               <AIAnalysisPanel 
-                  analysis={aiAnalysis} 
-                  onAnalyze={handleAnalyze} 
-                  loading={isAnalyzing}
-                  config={aiConfig}
-                  onUpdateConfig={handleUpdateConfig}
-               />
-               <BehaviorInsights data={hiveData} />
-               <ProductivityPanel data={hiveData} history={historyData} />
-            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                   <AIAnalysisPanel 
+                      analysis={aiAnalysis} 
+                      onAnalyze={handleAnalyze} 
+                      loading={isAnalyzing}
+                      config={aiConfig}
+                      onUpdateConfig={handleUpdateConfig}
+                   />
+                   <BehaviorInsights data={hiveData} />
+                   <ProductivityPanel data={hiveData} history={historyData} />
+                </div>
 
-            <div className="space-y-4">
-               <DetailedAnalytics history={historyData} currentData={hiveData} />
-            </div>
+                <div className="space-y-4">
+                   <DetailedAnalytics history={historyData} currentData={hiveData} />
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <p className="text-gray-500 text-lg mb-4">暂无数据</p>
+                <p className="text-sm text-gray-400 mb-6">数据库中没有找到蜂箱数据</p>
+                <button 
+                  onClick={handleSync}
+                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-xl shadow-md active:scale-95 transition-all"
+                >
+                  刷新数据
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[70vh]">

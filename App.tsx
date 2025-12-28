@@ -7,82 +7,60 @@ import { DetailedAnalytics } from './components/DetailedAnalytics';
 import { ProductivityPanel } from './components/ProductivityPanel';
 import { BehaviorInsights } from './components/BehaviorInsights';
 import { EventLog } from './components/EventLog';
-import { getSimulatedData, getHistoryData } from './services/mockDataService';
+import { fetchLiveHiveData, fetchHistoryData } from './services/dataService';
 import { analyzeHiveHealth } from './services/geminiService';
-import { BeehiveData, ConnectionMode, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig } from './types';
-import { Bluetooth, Signal, ShieldCheck, Zap, Globe, Cpu } from 'lucide-react';
+import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig } from './types';
+import { Database, ShieldCheck, Zap, Globe, Cpu, Server } from 'lucide-react';
 
 function App() {
-  const [connectionMode, setConnectionMode] = useState<ConnectionMode>('MQTT');
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [hiveData, setHiveData] = useState<BeehiveData | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
-  const [location, setLocation] = useState<LocationData>({ latitude: 30.5728, longitude: 104.0668, address: '四川省成都市龙泉驿区智慧农业园' });
+  const [location] = useState<LocationData>({ latitude: 30.5728, longitude: 104.0668, address: '数字化蜂场 - MySQL 集成节点' });
   
-  // AI Configuration State
   const [aiConfig, setAiConfig] = useState<CustomAIConfig>(() => {
     const saved = localStorage.getItem('SMART_HIVE_AI_CONFIG');
-    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'gemini-3-flash-preview', isActive: false };
+    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'gemini-3-flash-preview', apiBaseUrl: 'http://localhost:3000', apiToken: '', isActive: false };
   });
+
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  // Connection Steps for visual feedback
   const [connectStep, setConnectStep] = useState(0);
-  const steps = ["正在执行安全握手", "同步多维传感器数据", "加载 AI 预测模型", "建立数据流双向通道"];
-
-  useEffect(() => {
-    setHistoryData(getHistoryData(40));
-  }, []);
+  const steps = ["解析后端 API 地址", "注入鉴权令牌 (Token)", "同步 MySQL 时序库", "挂载 Gemini 分析引擎"];
 
   const handleUpdateConfig = (newConfig: CustomAIConfig) => {
     setAiConfig(newConfig);
     localStorage.setItem('SMART_HIVE_AI_CONFIG', JSON.stringify(newConfig));
   };
 
-  const handleConnect = () => {
+  const handleSync = async () => {
     setConnectionStatus('connecting');
-    setConnectStep(0);
+    for(let i = 0; i < steps.length; i++) {
+      setConnectStep(i);
+      await new Promise(r => setTimeout(r, 600));
+    }
+
+    const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
+    const history = await fetchHistoryData(aiConfig.apiBaseUrl, aiConfig.apiToken);
     
-    const timer = setInterval(() => {
-      setConnectStep(prev => {
-        if (prev >= steps.length - 1) {
-          clearInterval(timer);
-          setConnectionStatus('connected');
-          setHiveData(getSimulatedData());
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 600);
+    setHiveData(data);
+    setHistoryData(history);
+    setConnectionStatus('connected');
   };
 
   const handleDisconnect = () => {
     setConnectionStatus('disconnected');
     setHiveData(null);
-    setConnectStep(0);
   };
 
   useEffect(() => {
     if (connectionStatus !== 'connected') return;
-    const intervalId = setInterval(() => {
-      setHiveData(prevData => {
-        const newData = getSimulatedData();
-        setHistoryData(prevHistory => {
-            const newPoint = {
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                temp: newData.temperature,
-                weight: newData.weight,
-                beesIn: newData.beesIn,
-                beesOut: newData.beesOut
-            };
-            return [...prevHistory.slice(1), newPoint];
-        });
-        return newData;
-      });
-    }, 5000);
+    const intervalId = setInterval(async () => {
+      const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
+      setHiveData(data);
+    }, 15000); 
     return () => clearInterval(intervalId);
-  }, [connectionStatus]);
+  }, [connectionStatus, aiConfig.apiBaseUrl, aiConfig.apiToken]);
 
   const handleAnalyze = async () => {
     if (!hiveData) return;
@@ -98,13 +76,11 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16">
+    <div className="min-h-screen bg-gray-50 pb-16 font-sans">
       {connectionStatus === 'connected' && (
         <ConnectionHeader 
-          mode={connectionMode} 
           status={connectionStatus}
-          onToggleMode={setConnectionMode}
-          onConnect={handleConnect}
+          onSync={handleSync}
           onDisconnect={handleDisconnect}
         />
       )}
@@ -117,37 +93,22 @@ function App() {
                  <SensorGrid data={hiveData} location={location} />
                </div>
                <div className="xl:col-span-1">
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-full group hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">电量状态</p>
-                            <p className="text-3xl font-black text-gray-900">{Math.round(hiveData.batteryLevel)}%</p>
-                        </div>
-                        <div className={`p-3 rounded-2xl ${hiveData.batteryLevel > 20 ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
-                           <Cpu size={24} />
-                        </div>
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col justify-between group hover:shadow-md transition-shadow">
+                    <div>
+                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">SQL 同步状态</p>
+                        <p className="text-3xl font-black text-indigo-600">实时就绪</p>
+                        <p className="text-[10px] text-green-500 font-bold mt-1">Latency: 24ms</p>
                     </div>
-                    <div className="mt-6">
+                    <div className="mt-6 pt-6 border-t border-gray-50">
                         <div className="flex justify-between items-center mb-2">
-                           <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">信号强度 ({connectionMode})</p>
-                           <span className="text-[10px] font-bold text-indigo-600">-54 dBm</span>
+                           <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">数据吞吐量</p>
                         </div>
-                        <div className="flex gap-1.5 mt-1">
-                            {[1, 2, 3, 4, 5].map(i => (
-                                <div key={i} className={`h-2.5 flex-1 rounded-full ${i <= 4 ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]' : 'bg-gray-100'}`}></div>
-                            ))}
+                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-indigo-500 w-[45%] shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
                         </div>
                     </div>
                  </div>
                </div>
-            </div>
-
-            <div className="space-y-4">
-               <div className="flex items-center gap-2 px-2">
-                  <h2 className="text-lg font-bold text-gray-900">数字化洞察</h2>
-                  <div className="h-px flex-1 bg-gray-200"></div>
-               </div>
-               <DetailedAnalytics history={historyData} currentData={hiveData} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -162,122 +123,62 @@ function App() {
                <ProductivityPanel data={hiveData} history={historyData} />
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <EventLog />
+            <div className="space-y-4">
+               <DetailedAnalytics history={historyData} currentData={hiveData} />
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[90vh] relative">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.03]">
-              <div className="grid grid-cols-8 gap-4 transform rotate-12 scale-150">
-                {Array.from({length: 64}).map((_, i) => (
-                  <div key={i} className="aspect-square bg-gray-900 clip-hexagon"></div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-100 max-w-2xl w-full relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-indigo-500 to-emerald-500"></div>
+          <div className="flex flex-col items-center justify-center min-h-[85vh]">
+            <div className="bg-white p-10 md:p-14 rounded-[3rem] shadow-2xl border border-gray-100 max-w-2xl w-full text-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-600 to-indigo-400"></div>
               
-              <div className="flex flex-col md:flex-row gap-10 items-center">
-                <div className="flex-1 text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
-                    <ShieldCheck size={12} /> SmartHive v3.0 Pro
-                  </div>
-                  <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter leading-tight">
-                    智联蜂场<br/>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-600">云控制台</span>
-                  </h1>
-                  <p className="text-gray-500 mb-8 leading-relaxed font-medium">
-                    通过多维传感技术与 AI 边缘计算，赋予传统养蜂业“数字化灵魂”。
-                  </p>
-
-                  <div className="grid grid-cols-3 gap-3 mb-10">
-                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center">
-                      <Bluetooth size={16} className="text-blue-500 mb-1" />
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">BLE</span>
-                      <span className="text-[10px] font-bold text-green-500">就绪</span>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center">
-                      <Signal size={16} className="text-emerald-500 mb-1" />
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">4G/LTE</span>
-                      <span className="text-[10px] font-bold text-green-500">强信号</span>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col items-center">
-                      <Globe size={16} className="text-indigo-500 mb-1" />
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">Cloud</span>
-                      <span className="text-[10px] font-bold text-green-500">在线</span>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={handleConnect}
-                    disabled={connectionStatus === 'connecting'}
-                    className="w-full relative py-5 bg-gray-900 hover:bg-black text-white text-xl font-bold rounded-2xl transition-all transform hover:-translate-y-1 active:scale-95 shadow-xl shadow-gray-200 overflow-hidden group"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <span className="relative flex items-center justify-center gap-3">
-                      {connectionStatus === 'connecting' ? (
-                        <>
-                          <Zap className="animate-pulse text-yellow-400" size={20} />
-                          {steps[connectStep]}
-                        </>
-                      ) : (
-                        <>
-                          <Zap size={20} />
-                          立即建立同步
-                        </>
-                      )}
-                    </span>
-                  </button>
-                </div>
-
-                <div className="hidden md:flex w-48 h-48 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[2.5rem] shadow-inner items-center justify-center rotate-3 relative shrink-0">
-                  <div className="absolute inset-4 border-2 border-white/30 rounded-[1.5rem] border-dashed animate-spin-slow"></div>
-                  <Cpu size={64} className="text-white drop-shadow-lg" />
-                  
-                  <div className="absolute -top-4 -right-4 w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center animate-bounce">
-                    <Signal size={20} className="text-indigo-600" />
-                  </div>
-                  <div className="absolute -bottom-2 -left-4 w-10 h-10 bg-indigo-900 rounded-xl shadow-lg flex items-center justify-center">
-                    <Bluetooth size={16} className="text-white" />
-                  </div>
+              <div className="mb-8 flex justify-center">
+                <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  <Database size={40} />
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 flex gap-8 items-center text-gray-400">
-               <div className="flex flex-col items-center">
-                  <span className="text-xs font-bold text-gray-800">1.2ms</span>
-                  <span className="text-[10px] uppercase font-black tracking-widest">延时</span>
-               </div>
-               <div className="w-px h-8 bg-gray-200"></div>
-               <div className="flex flex-col items-center">
-                  <span className="text-xs font-bold text-gray-800">256-bit</span>
-                  <span className="text-[10px] uppercase font-black tracking-widest">加密</span>
-               </div>
-               <div className="w-px h-8 bg-gray-200"></div>
-               <div className="flex flex-col items-center">
-                  <span className="text-xs font-bold text-gray-800">Gemini 3</span>
-                  <span className="text-[10px] uppercase font-black tracking-widest">内核</span>
-               </div>
+              <h1 className="text-4xl font-black text-gray-900 mb-4 tracking-tighter">
+                SmartHive <span className="text-indigo-600">SQL Bridge</span>
+              </h1>
+              <p className="text-gray-500 mb-10 font-medium px-4">
+                已进入 MySQL 数据驱动模式。系统将通过您定义的网关地址进行鉴权并拉取传感器时序数据。
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mb-10">
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center">
+                  <Server size={20} className="text-indigo-500 mb-2" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">后端适配器</span>
+                  <span className="text-xs font-bold text-gray-800">REST API / JSON</span>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center">
+                  <ShieldCheck size={20} className="text-purple-500 mb-2" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">认证协议</span>
+                  <span className="text-xs font-bold text-gray-800">Bearer Token</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleSync}
+                disabled={connectionStatus === 'connecting' || !aiConfig.isActive}
+                className={`w-full py-5 text-xl font-bold rounded-2xl transition-all shadow-xl active:scale-95 ${
+                  aiConfig.isActive 
+                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100' 
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {!aiConfig.isActive ? '请先配置集成参数' : (connectionStatus === 'connecting' ? steps[connectStep] : '验证凭据并建立连接')}
+              </button>
+              
+              {!aiConfig.isActive && (
+                <p className="mt-4 text-xs text-orange-500 font-bold animate-pulse">
+                  ⚠ 提示：请点击右上角设置图标填写您的 API 接口信息
+                </p>
+              )}
             </div>
           </div>
         )}
       </main>
-      
-      <style>{`
-        .clip-hexagon {
-          clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-        }
-        .animate-spin-slow {
-          animation: spin 8s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

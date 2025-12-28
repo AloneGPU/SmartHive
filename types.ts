@@ -1,5 +1,5 @@
 
-export type ConnectionMode = 'BLE' | 'MQTT';
+export type ConnectionMode = 'DATABASE' | 'CLOUD';
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected';
 
@@ -30,5 +30,7 @@ export interface AIAnalysisResult {
 export interface CustomAIConfig {
   apiKey: string;
   modelName: string;
+  apiBaseUrl: string;
+  apiToken: string; // 新增：访问后端 API 的授权令牌
   isActive: boolean;
 }

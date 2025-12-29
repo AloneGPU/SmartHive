@@ -44,7 +44,7 @@ export const AIAnalysisPanel: React.FC<Props> = ({
     if (dbOk && aiOk) {
       onUpdateConfig({
         apiKey: tempConfig.apiKey || '',
-        modelName: tempConfig.modelName || 'gemini-3-flash-preview',
+        modelName: tempConfig.modelName || 'Qwen-3',//默认模型
         apiBaseUrl: tempConfig.apiBaseUrl || 'http://localhost:3000',
         apiToken: tempConfig.apiToken || '',
         isActive: true
@@ -100,7 +100,7 @@ export const AIAnalysisPanel: React.FC<Props> = ({
                   <label className="block text-[9px] font-bold text-gray-500 mb-1">访问令牌 (API Token)</label>
                   <input 
                     type="password"
-                    value={tempConfig.apiToken}
+                    value={tempConfig.apiToken}//默认值为空
                     onChange={e => setTempConfig({...tempConfig, apiToken: e.target.value})}
                     placeholder="接口鉴权密钥"
                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs"

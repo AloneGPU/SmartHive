@@ -28,11 +28,12 @@ const verifyToken = (req: express.Request, res: express.Response, next: express.
   
   const token = authHeader.split(' ')[1];
   
-  // For now, we'll accept any non-empty token as valid
-  // In production, you would verify the token against a database or use JWT
-  if (!token || token.trim() === '') {
+  // Fixed token - hardcoded in backend
+  const FIXED_TOKEN = '123456789';//令牌密码
+  
+  if (token !== FIXED_TOKEN) {
     return res.status(401).json({
-      message: 'Unauthorized: Token is required'
+      message: 'Unauthorized: Invalid token'
     });
   }
   

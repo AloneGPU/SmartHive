@@ -39,7 +39,7 @@ function App() {
   
   const [aiConfig, setAiConfig] = useState<CustomAIConfig>(() => {
     const saved = localStorage.getItem('SMART_HIVE_AI_CONFIG');
-    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'gemini-3-flash-preview', apiBaseUrl: 'http://localhost:3001', apiToken: 'test-token', isActive: true };
+    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'gemini-3-flash-preview', apiBaseUrl: 'http://localhost:3001', apiToken: 'your-secure-token', isActive: true };
   });
 
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);

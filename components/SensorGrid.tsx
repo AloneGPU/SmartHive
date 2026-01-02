@@ -9,7 +9,28 @@ interface Props {
 
 export const SensorGrid: React.FC<Props> = ({ data, location }) => {
   const netBees = data.beesIn - data.beesOut;
-  const tempStatus = data.temperature > 36 || data.temperature < 31 ? 'warning' : 'optimal';
+  
+  // Status Logic
+  const tempStatus = data.temperature > 36 ? 'high' : data.temperature < 31 ? 'low' : 'optimal';
+  const humStatus = data.humidity > 80 ? 'high' : data.humidity < 40 ? 'low' : 'optimal';
+  const weightStatus = data.weight > 25 ? 'heavy' : 'normal'; // Simplified logic
+
+  const getStatusLabel = (val: number, type: 'temp' | 'hum') => {
+      if (type === 'temp') {
+          if (val > 36) return { text: '需降温', color: 'text-red-500', bg: 'bg-red-50' };
+          if (val < 31) return { text: '需保温', color: 'text-blue-500', bg: 'bg-blue-50' };
+          return { text: '适宜繁育', color: 'text-emerald-500', bg: 'bg-emerald-50' };
+      }
+      if (type === 'hum') {
+          if (val > 80) return { text: '过湿', color: 'text-amber-500', bg: 'bg-amber-50' };
+          if (val < 40) return { text: '干燥', color: 'text-amber-500', bg: 'bg-amber-50' };
+          return { text: '环境舒适', color: 'text-emerald-500', bg: 'bg-emerald-50' };
+      }
+      return { text: '正常', color: 'text-gray-500', bg: 'bg-gray-50' };
+  };
+
+  const tempLabel = getStatusLabel(data.temperature, 'temp');
+  const humLabel = getStatusLabel(data.humidity, 'hum');
   
   // 优先使用数据中的GPS信息，否则使用传入的location对象
   const displayLatitude = data.latitude !== undefined ? data.latitude : location.latitude;
@@ -18,15 +39,17 @@ export const SensorGrid: React.FC<Props> = ({ data, location }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {/* Temperature */}
-      <div className={`p-5 rounded-2xl shadow-sm border transition-colors ${tempStatus === 'warning' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}>
+      <div className={`p-5 rounded-2xl shadow-sm border transition-colors ${tempStatus !== 'optimal' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100'}`}>
         <div className="flex items-center justify-between mb-3 text-gray-400">
-          <Thermometer size={18} />
-          {tempStatus === 'warning' && <AlertCircle size={14} className="text-red-500 animate-pulse" />}
+          <Thermometer size={18} className={tempStatus !== 'optimal' ? 'text-red-500' : ''} />
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${tempLabel.bg} ${tempLabel.color}`}>
+             {tempLabel.text}
+          </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">内部温度</span>
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">箱内温度</span>
           <div className="flex items-end gap-1">
-            <span className={`text-2xl font-black ${tempStatus === 'warning' ? 'text-red-600' : 'text-gray-900'}`}>{data.temperature}</span>
+            <span className={`text-2xl font-black ${tempStatus !== 'optimal' ? 'text-red-600' : 'text-gray-900'}`}>{data.temperature}</span>
             <span className="text-xs text-gray-400 mb-1 font-bold">°C</span>
           </div>
         </div>
@@ -34,11 +57,14 @@ export const SensorGrid: React.FC<Props> = ({ data, location }) => {
 
       {/* Humidity */}
       <div className="p-5 rounded-2xl shadow-sm border bg-white border-gray-100">
-        <div className="flex items-center mb-3 text-blue-400">
+        <div className="flex items-center justify-between mb-3 text-blue-400">
           <Droplets size={18} />
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${humLabel.bg} ${humLabel.color}`}>
+             {humLabel.text}
+          </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">内部湿度</span>
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">相对湿度</span>
           <div className="flex items-end gap-1">
             <span className="text-2xl font-black text-gray-900">{data.humidity}</span>
             <span className="text-xs text-gray-400 mb-1 font-bold">%</span>
@@ -48,8 +74,11 @@ export const SensorGrid: React.FC<Props> = ({ data, location }) => {
 
       {/* Weight */}
       <div className="p-5 rounded-2xl shadow-sm border bg-white border-gray-100">
-        <div className="flex items-center mb-3 text-emerald-500">
+        <div className="flex items-center justify-between mb-3 text-emerald-500">
           <Scale size={18} />
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-600">
+             储蜜增长
+          </span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter mb-1">蜂箱总重</span>

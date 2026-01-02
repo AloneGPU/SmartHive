@@ -6,13 +6,17 @@ import { AIAnalysisPanel } from './components/AIAnalysisPanel';
 import { DetailedAnalytics } from './components/DetailedAnalytics';
 import { ProductivityPanel } from './components/ProductivityPanel';
 import { BehaviorInsights } from './components/BehaviorInsights';
+import { HistoryCharts } from './components/HistoryCharts';
+import { DataAnalysisPanel } from './components/DataAnalysisPanel';
 import { EventLog } from './components/EventLog';
+import { WeatherWidget } from './components/WeatherWidget';
 import { fetchLiveHiveData, fetchHistoryData } from './services/dataService';
 import { analyzeHiveHealth } from './services/geminiService';
 import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig } from './types';
-import { Database, ShieldCheck, Zap, Globe, Cpu, Server, RefreshCw } from 'lucide-react';
+import { Database, ShieldCheck, Zap, Globe, Cpu, Server, RefreshCw, LayoutDashboard, BarChart2, CheckCircle, Smartphone } from 'lucide-react';
 
 function App() {
+  const [activeTab, setActiveTab] = useState<'monitor' | 'analytics'>('monitor');
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [hiveData, setHiveData] = useState<BeehiveData | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
@@ -118,92 +122,180 @@ function App() {
           <div className="animate-in fade-in slide-in-from-top-4 duration-700 space-y-8">
             {hiveData ? (
               <>
-                <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                   <div className="xl:col-span-3">
-                     <SensorGrid data={hiveData} location={location} />
-                   </div>
-                   <div className="xl:col-span-1">
-                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col justify-between group hover:shadow-md transition-shadow">
-                        <div>
-                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">SQL 同步状态</p>
-                            <p className="text-3xl font-black text-indigo-600">实时就绪</p>
-                            <p className="text-[10px] text-green-500 font-bold mt-1">Latency: 24ms</p>
-                        </div>
-                        <div className="mt-6 pt-6 border-t border-gray-50">
-                            <div className="flex justify-between items-center mb-2">
-                               <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">数据吞吐量</p>
-                            </div>
-                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-indigo-500 w-[45%] shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
-                            </div>
-                        </div>
+                <div className="flex space-x-4 border-b border-gray-200 pb-2 mb-6">
+                  <button
+                    onClick={() => setActiveTab('monitor')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeTab === 'monitor'
+                        ? 'bg-indigo-50 text-indigo-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    实时监控
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('analytics')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeTab === 'analytics'
+                        ? 'bg-indigo-50 text-indigo-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <BarChart2 className="w-4 h-4" />
+                    深度分析
+                  </button>
+                </div>
+
+                {activeTab === 'monitor' ? (
+                  <div className="space-y-6">
+                    {/* Top Stats */}
+                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                      <div className="xl:col-span-3">
+                        <SensorGrid data={hiveData} location={location} />
+                      </div>
+                      <div className="xl:col-span-1">
+                         {/* Replace SQL Status with Weather Widget */}
+                         <WeatherWidget location={location} />
+                      </div>
+                    </div>
+
+                    {/* Main Trend Chart */}
+                    <HistoryCharts data={historyData} />
+
+                    {/* AI & Event Log */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                         <AIAnalysisPanel 
+                            analysis={aiAnalysis} 
+                            onAnalyze={handleAnalyze} 
+                            loading={isAnalyzing}
+                            config={aiConfig}
+                            onUpdateConfig={handleUpdateConfig}
+                         />
+                      </div>
+                      <div className="lg:col-span-1">
+                         <EventLog />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                     <DataAnalysisPanel history={historyData} />
+                     <DetailedAnalytics history={historyData} currentData={hiveData} />
+                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <BehaviorInsights data={hiveData} />
+                        <ProductivityPanel data={hiveData} history={historyData} />
                      </div>
-                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                   <AIAnalysisPanel 
-                      analysis={aiAnalysis} 
-                      onAnalyze={handleAnalyze} 
-                      loading={isAnalyzing}
-                      config={aiConfig}
-                      onUpdateConfig={handleUpdateConfig}
-                   />
-                   <BehaviorInsights data={hiveData} />
-                   <ProductivityPanel data={hiveData} history={historyData} />
-                </div>
-
-                <div className="space-y-4">
-                   <DetailedAnalytics history={historyData} currentData={hiveData} />
-                </div>
+                  </div>
+                )}
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <p className="text-gray-500 text-lg mb-4">暂无数据</p>
-                <p className="text-sm text-gray-400 mb-6">数据库中没有找到蜂箱数据</p>
+              <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto mt-12">
+                <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-4">
+                   <Server size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">数据暂未就绪</h3>
+                <p className="text-gray-500 text-center mb-8 max-w-md">
+                   数据库中尚未检测到有效的蜂箱传感器数据。如果您是首次使用，请确保硬件设备已开启并连接网络。
+                </p>
+                <div className="w-full bg-gray-50 rounded-xl p-4 mb-6">
+                    <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                        <CheckCircle size={16} className="text-green-500"/> 自检清单
+                    </h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                        <li className="flex items-center gap-2">
+                           <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                           检查传感器网关电源指示灯是否常亮
+                        </li>
+                        <li className="flex items-center gap-2">
+                           <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                           确认 4G/WiFi 信号强度是否正常
+                        </li>
+                    </ul>
+                </div>
                 <button 
                   onClick={handleSync}
-                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-2 rounded-xl shadow-md active:scale-95 transition-all"
+                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-8 py-3 rounded-xl shadow-lg active:scale-95 transition-all font-bold flex items-center gap-2"
                 >
-                  刷新数据
+                  <RefreshCw size={18} />
+                  刷新并尝试重连
                 </button>
               </div>
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[70vh]">
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 max-w-md w-full text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">连接状态</h2>
-              <div className="mb-6">
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
-                  connectionStatus === 'connecting' ? 'bg-blue-100' : 'bg-gray-100'
+          <div className="flex flex-col items-center justify-center min-h-[85vh]">
+            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 max-w-md w-full text-center relative overflow-hidden">
+               {/* Decorative background */}
+               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+              
+              <div className="mb-8 relative z-10">
+                <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 ${
+                  connectionStatus === 'connecting' ? 'bg-indigo-50 ring-4 ring-indigo-100' : 'bg-gray-50 ring-4 ring-gray-100'
                 }`}>
                   {connectionStatus === 'connecting' ? (
-                    <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+                    <RefreshCw className="w-10 h-10 text-indigo-600 animate-spin" />
                   ) : (
-                    <Database className="w-8 h-8 text-gray-500" />
+                    <Smartphone className="w-10 h-10 text-gray-400" />
                   )}
                 </div>
-                <p className="text-gray-600 mb-2">
-                  {connectionStatus === 'connecting' ? '正在连接到后端...' : '未连接到后端'}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {connectionStatus === 'connecting' ? '请稍候...' : '系统将自动尝试连接'}
+                <h2 className="text-2xl font-black text-gray-900 mb-2">
+                  {connectionStatus === 'connecting' ? '正在同步数据...' : '智慧蜂场管理终端'}
+                </h2>
+                <p className="text-gray-500 text-sm px-4">
+                  {connectionStatus === 'connecting' 
+                    ? '正在从云端拉取最新的传感器数据与 AI 分析报告，请稍候。' 
+                    : '请连接设备以查看实时蜂箱状态、环境监控及智能分析报告。'}
                 </p>
               </div>
               
-              <button 
-                onClick={handleSync}
-                disabled={connectionStatus === 'connecting'}
-                className={`w-full py-3 font-bold rounded-xl transition-all ${
-                  connectionStatus === 'connecting' 
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md active:scale-95'
-                }`}
-              >
-                {connectionStatus === 'connecting' ? '连接中...' : '手动连接'}
-              </button>
+              <div className="space-y-3 relative z-10">
+                  <button 
+                    onClick={handleSync}
+                    disabled={connectionStatus === 'connecting'}
+                    className={`w-full py-3.5 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                      connectionStatus === 'connecting' 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 active:scale-95'
+                    }`}
+                  >
+                    {connectionStatus === 'connecting' ? (
+                      '连接中...' 
+                    ) : (
+                      <>
+                        <Zap size={18} className="fill-current" />
+                        立即连接
+                      </>
+                    )}
+                  </button>
+                  
+                  {!connectionStatus && (
+                      <button className="w-full py-3.5 font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors">
+                        查看演示模式
+                      </button>
+                  )}
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-gray-50 flex justify-center gap-6">
+                 <div className="flex flex-col items-center gap-1">
+                    <ShieldCheck size={20} className="text-emerald-500" />
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">安全加密</span>
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                    <Globe size={20} className="text-blue-500" />
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">云端同步</span>
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                    <Cpu size={20} className="text-purple-500" />
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">AI 驱动</span>
+                 </div>
+              </div>
+
             </div>
+            <p className="mt-8 text-xs text-gray-400 font-medium">
+               &copy; 2024 SmartHive Connect &bull; v1.0.2
+            </p>
           </div>
         )}
       </main>

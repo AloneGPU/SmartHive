@@ -35,7 +35,14 @@ export const fetchHistoryData = async (baseUrl: string, token: string, limit: nu
   try {
     const response = await authorizedFetch(`${baseUrl}/api/beehive/history?limit=${limit}`, token);
     if (!response.ok) throw new Error('历史记录加载失败');
-    return await response.json();
+    const data: BeehiveData[] = await response.json();
+    
+    // Transform to chart friendly format and sort by time ascending
+    return data.map(item => ({
+      ...item,
+      time: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      temp: item.temperature, // Map temperature to temp for existing charts
+    })).reverse();
   } catch (error) {
     return [];
   }

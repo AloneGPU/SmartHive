@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
     return {
       base: './', // 关键配置：设置为相对路径，确保在 GitHub Pages 等子目录下也能正常加载
       server: {
+        host: true, // 允许局域网访问 (比如用手机连接电脑的 WiFi IP)
         port: 5173, // 明确指定前端端口，避免与后端 3001 冲突
         proxy: {
           '/api': {

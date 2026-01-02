@@ -10,7 +10,8 @@
     "server": "node --loader ts-node/esm server.ts",
     "dev:server": "tsx watch server.ts",
     "build:server": "esbuild server.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist-server/server.js --packages=external",
-    "start": "concurrently \"npm run dev:server\" \"npm run dev\" --kill-others --prefix-colors \"blue,green\""
+    "start": "concurrently \"npm run dev:server\" \"npm run dev\" --kill-others --prefix-colors \"blue,green\"",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "@google/genai": "^1.31.0",
@@ -29,6 +30,7 @@
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^9.2.1",
+    "gh-pages": "^6.3.0",
     "typescript": "~5.8.2",
     "vite": "^5.4.10"
   }

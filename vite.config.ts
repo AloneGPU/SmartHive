@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
+      base: './', // 关键配置：设置为相对路径，确保在 GitHub Pages 等子目录下也能正常加载
       server: {
         port: 5173, // 明确指定前端端口，避免与后端 3001 冲突
         proxy: {

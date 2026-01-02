@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import {
   testDatabaseConnection,
   fetchLiveHiveDataFromDB,
@@ -8,6 +9,8 @@ import {
   initializeDatabase
 } from './services/databaseService';
 import { BeehiveData } from './types';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,8 +31,8 @@ const verifyToken = (req: express.Request, res: express.Response, next: express.
   
   const token = authHeader.split(' ')[1];
   
-  // Fixed token - hardcoded in backend
-  const FIXED_TOKEN = '123456789';//令牌密码
+  // Token from env or default
+  const FIXED_TOKEN = process.env.API_TOKEN || '123456789';//令牌密码
   
   if (token !== FIXED_TOKEN) {
     return res.status(401).json({
@@ -113,7 +116,13 @@ app.post('/api/beehive', verifyToken, async (req, res) => {
 const startServer = async () => {
   try {
     // Initialize database table
-    await initializeDatabase();
+    try {
+        await initializeDatabase();
+    } catch (dbError) {
+        console.warn('Warning: Database initialization failed. The server will start, but database features may not work.');
+        console.warn('Error details:', dbError instanceof Error ? dbError.message : String(dbError));
+        console.warn('Please check your .env file and ensure MySQL is running.');
+    }
     
     // Start the server
     app.listen(PORT, () => {
@@ -123,7 +132,7 @@ const startServer = async () => {
       console.log(`  GET  http://localhost:${PORT}/api/beehive/latest (requires token)`);
       console.log(`  GET  http://localhost:${PORT}/api/beehive/history?limit=40 (requires token)`);
       console.log(`  POST http://localhost:${PORT}/api/beehive (requires token)`);
-      console.log('Token format: Authorization: Bearer [your_token]');
+      console.log(`Token format: Authorization: Bearer ${process.env.API_TOKEN || '123456789'}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

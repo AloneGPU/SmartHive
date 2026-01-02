@@ -1,12 +1,16 @@
 import * as mysql from 'mysql2/promise';
 import { BeehiveData } from '../types';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Database configuration
 const DB_CONFIG = {
-  host: 'localhost',
-  user: 'root',
-  password: '2006520Zlt',
-  database: 'tmp'
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '2006520Zlt',
+  database: process.env.DB_NAME || 'tmp',
+  port: parseInt(process.env.DB_PORT || '3306')
 };
 
 // Create a connection pool
@@ -106,7 +110,30 @@ export const insertBeehiveData = async (data: Omit<BeehiveData, 'timestamp'>): P
  * Initialize database table if it doesn't exist
  */
 export const initializeDatabase = async (): Promise<void> => {
+  let connection;
   try {
+    // Try to connect to the specific database
+    try {
+      connection = await pool.getConnection();
+      await connection.ping();
+      connection.release();
+    } catch (err: any) {
+       // If database does not exist, try to create it
+       if (err.code === 'ER_BAD_DB_ERROR') {
+          console.log(`Database '${DB_CONFIG.database}' not found. Attempting to create it...`);
+          const adminPool = mysql.createPool({
+            ...DB_CONFIG,
+            database: undefined // Connect without selecting a database
+          });
+          
+          await adminPool.execute(`CREATE DATABASE IF NOT EXISTS \`${DB_CONFIG.database}\``);
+          await adminPool.end();
+          console.log(`Database '${DB_CONFIG.database}' created successfully.`);
+       } else {
+         throw err;
+       }
+    }
+
     // Create hive_data table if it doesn't exist
     const createHiveDataTableQuery = `
       CREATE TABLE IF NOT EXISTS hive_data (
@@ -125,11 +152,14 @@ export const initializeDatabase = async (): Promise<void> => {
     `;
     
     await pool.execute(createHiveDataTableQuery);
-    console.log('Created hive_data table successfully');
+    console.log('Created hive_data table successfully (if it did not exist)');
     
     console.log('Database initialization completed successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
+    // Do not throw error here, let the server start even if DB fails, 
+    // but the endpoints will fail. 
+    // Or better, let the server know so it can warn the user.
     throw error;
   }
 };

@@ -1,10 +1,11 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { BeehiveData, AIAnalysisResult, CustomAIConfig } from "../types";
+import { BeehiveData, AIAnalysisResult, CustomAIConfig, HiveConfig } from "../types";
 
 export const analyzeHiveHealth = async (
   data: BeehiveData, 
-  config: CustomAIConfig
+  config: CustomAIConfig,
+  hiveConfig?: HiveConfig
 ): Promise<AIAnalysisResult> => {
   // 优先使用自定义配置，如果没有则回退到环境变量
   const activeApiKey = config.isActive ? config.apiKey : process.env.API_KEY;
@@ -16,8 +17,17 @@ export const analyzeHiveHealth = async (
 
   const ai = new GoogleGenAI({ apiKey: activeApiKey });
 
+  // 构建更丰富的上下文
+  const harvestContext = hiveConfig ? `
+    养殖配置信息:
+    - 上次采蜜时间: ${new Date(hiveConfig.lastHarvestDate || Date.now()).toLocaleDateString()}
+    - 目标产量: ${hiveConfig.targetWeight}kg
+    - 距离上次采蜜: ${Math.floor((Date.now() - (hiveConfig.lastHarvestDate || Date.now())) / (1000 * 60 * 60 * 24))}天
+  ` : '';
+
   const prompt = `
     作为资深数字化养蜂专家，请分析以下蜂箱多维传感数据并给出专业决策。
+    ${harvestContext}
     
     实时指标:
     - 环境: 温度 ${data.temperature}°C, 湿度 ${data.humidity}%
@@ -27,13 +37,13 @@ export const analyzeHiveHealth = async (
     分析重点:
     1. 温湿度稳定性是否适合幼虫发育？
     2. 进出蜂比例是否暗示分蜂风险、盗蜂现象或中暑倾向？
-    3. 根据重量趋势判断是否处于蜜源植物丰产期？
+    3. 根据重量趋势和距离上次采蜜的时间，结合当前重量与目标重量(${hiveConfig?.targetWeight || 50}kg)，预测最佳采蜜时机。
 
     请严格返回如下 JSON 格式：
     {
       "healthScore": (0-100),
-      "summary": (分析蜂群状态的专业洞察，50字以内，中文),
-      "recommendations": (3条具备可操作性的专家建议，数组，中文)
+      "summary": (分析蜂群状态的专业洞察，重点包含对采蜜时间的预测，50字以内，中文),
+      "recommendations": (3条具备可操作性的专家建议，建议包含具体的采蜜准备或增产措施，数组，中文)
     }
   `;
 

@@ -70,6 +70,9 @@ const createPackage = async () => {
   // Copy .env
   copyFile(path.join(rootDir, '.env'), path.join(backendDir, '.env'));
 
+  // Copy DEPLOY_GUIDE.md
+  copyFile(path.join(rootDir, 'DEPLOY_GUIDE.md'), path.join(releaseDir, '使用说明书_必读.md'));
+
   // 3. Create start.bat for Windows
   const batContent = `@echo off
 echo Starting SmartHive Backend...

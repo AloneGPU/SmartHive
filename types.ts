@@ -9,6 +9,12 @@ export interface LocationData {
   address?: string;
 }
 
+export interface HiveConfig {
+  lastHarvestDate: number | null; // Timestamp of last harvest
+  startFarmingDate: number | null; // Timestamp when farming started
+  targetWeight: number; // Target weight for harvest in kg (default e.g. 50)
+}
+
 export interface BeehiveData {
   timestamp: number;
   temperature: number; // Celsius

@@ -12,7 +12,7 @@ import { EventLog } from './components/EventLog';
 import { WeatherWidget } from './components/WeatherWidget';
 import { fetchLiveHiveData, fetchHistoryData } from './services/dataService';
 import { analyzeHiveHealth } from './services/geminiService';
-import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig } from './types';
+import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig, HiveConfig } from './types';
 import { Database, ShieldCheck, Zap, Globe, Cpu, Server, RefreshCw, LayoutDashboard, BarChart2, CheckCircle, Smartphone } from 'lucide-react';
 
 function App() {
@@ -26,6 +26,21 @@ function App() {
     longitude: 104.0668, 
     address: '数字化蜂场 - MySQL 集成节点'
   });
+
+  // 蜂箱配置信息
+  const [hiveConfig, setHiveConfig] = useState<HiveConfig>(() => {
+    const saved = localStorage.getItem('SMART_HIVE_CONFIG');
+    return saved ? JSON.parse(saved) : { 
+      lastHarvestDate: Date.now() - 15 * 24 * 60 * 60 * 1000, // Default to 15 days ago
+      startFarmingDate: Date.now() - 90 * 24 * 60 * 60 * 1000, // Default to 3 months ago
+      targetWeight: 50 // Default target 50kg
+    };
+  });
+
+  const handleUpdateHiveConfig = (newConfig: HiveConfig) => {
+    setHiveConfig(newConfig);
+    localStorage.setItem('SMART_HIVE_CONFIG', JSON.stringify(newConfig));
+  };
   
   // 当获取到新的 GPS 数据时，更新位置信息
   useEffect(() => {
@@ -98,11 +113,12 @@ function App() {
   const handleAnalyze = async () => {
     if (!hiveData) return;
     setIsAnalyzing(true);
+    
     try {
-      const result = await analyzeHiveHealth(hiveData, aiConfig);
+      const result = await analyzeHiveHealth(hiveData, aiConfig, hiveConfig);
       setAiAnalysis(result);
     } catch (error) {
-      console.error(error);
+      console.error("Analysis failed:", error);
     } finally {
       setIsAnalyzing(false);
     }
@@ -167,11 +183,13 @@ function App() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <div className="lg:col-span-2">
                          <AIAnalysisPanel 
+                            data={hiveData}
                             analysis={aiAnalysis} 
+                            isAnalyzing={isAnalyzing}
                             onAnalyze={handleAnalyze} 
-                            loading={isAnalyzing}
                             config={aiConfig}
                             onUpdateConfig={handleUpdateConfig}
+                            hiveConfig={hiveConfig}
                          />
                       </div>
                       <div className="lg:col-span-1">
@@ -185,7 +203,12 @@ function App() {
                      <DetailedAnalytics history={historyData} currentData={hiveData} />
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <BehaviorInsights data={hiveData} />
-                        <ProductivityPanel data={hiveData} history={historyData} />
+                        <ProductivityPanel 
+                           data={hiveData} 
+                           history={historyData} 
+                           config={hiveConfig}
+                           onUpdateConfig={handleUpdateHiveConfig}
+                        />
                      </div>
                   </div>
                 )}

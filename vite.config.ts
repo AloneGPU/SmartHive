@@ -6,8 +6,13 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3000,
-        host: '0.0.0.0',
+        port: 5173, // 明确指定前端端口，避免与后端 3001 冲突
+        proxy: {
+          '/api': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
+          }
+        }
       },
       plugins: [react()],
       define: {

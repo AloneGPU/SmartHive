@@ -10,102 +10,89 @@
 
 ## 🚀 快速开始
 
-### 第一步：安装 Node.js
+### 📦 前置要求
 
-如果您的电脑还没有安装 Node.js，请：
+在开始之前，请确保已安装：
 
-1. 访问 [Node.js 官网](https://nodejs.org/)
-2. 下载并安装 LTS 版本（推荐 20.x）
-3. 安装完成后，打开命令提示符（CMD）或 PowerShell，输入以下命令验证：
-   ```bash
-   node --version
-   npm --version
-   ```
-   如果显示版本号，说明安装成功。
+1. **Node.js**（版本 18.0 或更高，推荐 20.x）
+   - 下载地址：https://nodejs.org/
+   - 安装后验证：打开命令行输入 `node --version`
 
-### 第二步：安装 MySQL
+2. **MySQL**（版本 5.7 或更高，推荐 8.0）
+   - 下载地址：https://dev.mysql.com/downloads/mysql/
+   - 安装时记住 root 密码
+   - 确保 MySQL 服务正在运行
 
-1. 访问 [MySQL 官网](https://dev.mysql.com/downloads/mysql/)
-2. 下载 MySQL Community Server（Windows 版本）
-3. 安装时记住您设置的 root 用户密码
-4. 确保 MySQL 服务正在运行（可以在 Windows 服务中查看）
+### 🎯 启动项目（三种方式）
 
-### 第三步：配置项目
+#### 方式一：一键启动（最简单，推荐新手）
 
-1. **复制环境变量文件**
-   
-   在项目根目录下创建一个名为 `.env` 的文件（注意：文件名以点开头，没有扩展名）
-   
-   如果项目中有 `env.example` 文件，您可以复制它：
-   ```bash
-   copy env.example .env
-   ```
-   
-   或者手动创建 `.env` 文件，内容如下：
-   ```
-   # 后端服务器配置
-   PORT=3001
-   API_TOKEN=123456789
+1. **双击运行 `启动项目.bat`**
+   - 自动检查 Node.js
+   - 自动安装依赖（首次运行）
+   - 自动创建 `.env` 配置文件
 
-   # MySQL数据库配置（请根据您的实际情况修改）
-   DB_HOST=localhost
-   DB_USER=root
-   DB_PASSWORD=你的MySQL密码
-   DB_NAME=smarthive
-   DB_PORT=3306
+2. **配置数据库密码**
+   - 如果首次运行，会创建 `.env` 文件
+   - 用记事本打开 `.env` 文件
+   - 修改 `DB_PASSWORD=你的MySQL密码`
 
-   # 通义千问 (Qwen) AI API配置（用于AI分析功能，推荐国内用户使用）
-   # 获取API Key: https://dashscope.console.aliyun.com/
-   QWEN_API_KEY=你的通义千问API密钥（可选）
-   ```
+3. **访问系统**
+   - 浏览器访问：http://localhost:5173
+   - 后端API：http://localhost:3001
 
-2. **修改数据库配置**
-   
-   打开 `.env` 文件，将 `DB_PASSWORD` 改为您安装 MySQL 时设置的 root 密码。
-
-### 第四步：安装依赖
-
-在项目根目录下，打开命令提示符（CMD）或 PowerShell，运行：
+#### 方式二：使用 npm start（同时启动前后端）
 
 ```bash
+# 1. 安装依赖（首次运行）
 npm install
-```
 
-这个过程可能需要几分钟，请耐心等待。
+# 2. 配置 .env 文件（参考 env.example）
 
-### 第五步：启动项目
-
-#### 方式一：使用启动脚本（推荐，最简单）
-
-1. 双击运行项目根目录下的 `启动项目.bat` 文件
-2. 等待两个窗口打开：
-   - 蓝色窗口：后端服务器（运行在 http://localhost:3001）
-   - 绿色窗口：前端开发服务器（运行在 http://localhost:5173）
-3. 浏览器会自动打开，如果没有，请手动访问：http://localhost:5173
-
-#### 方式二：使用命令行
-
-在项目根目录下运行：
-
-```bash
+# 3. 启动项目
 npm start
 ```
 
-这会同时启动前端和后端服务器。
+#### 方式三：分别启动（适合调试）
 
-#### 方式三：分别启动（用于调试）
-
-**启动后端服务器：**
+**启动后端（第一个命令行窗口）：**
 ```bash
 npm run dev:server
 ```
 
-**启动前端服务器（新开一个命令行窗口）：**
+**启动前端（第二个命令行窗口）：**
 ```bash
 npm run dev
 ```
 
-然后访问 http://localhost:5173
+然后访问：http://localhost:5173
+
+### ⚙️ 配置说明
+
+#### 创建 .env 文件
+
+如果项目中没有 `.env` 文件，可以：
+
+1. 复制 `env.example` 文件并重命名为 `.env`
+2. 或者运行 `启动项目.bat`，会自动创建
+
+#### 修改 .env 配置
+
+```env
+# 后端服务器配置
+PORT=3001
+API_TOKEN=123456789  # 生产环境请修改为复杂密码
+
+# MySQL数据库配置
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=你的MySQL密码  # ⚠️ 必须修改
+DB_NAME=smarthive
+DB_PORT=3306
+
+# 通义千问 API（可选，用于AI分析）
+QWEN_API_KEY=你的API密钥
+```
 
 ## 📁 项目结构
 
@@ -193,18 +180,46 @@ npm install
 ### 构建生产版本
 
 ```bash
-# 构建前端
+# 构建前端（输出到 dist/ 目录）
 npm run build
 
-# 构建后端
+# 构建后端（输出到 dist-server/server.js）
 npm run build:server
 ```
 
 ### 预览生产版本
 
 ```bash
+# 先构建前端
+npm run build
+
+# 然后预览
 npm run preview
 ```
+
+### 插入测试数据
+
+如果想快速测试系统，可以插入测试数据：
+
+```bash
+# 方式一：使用批处理文件（Windows）
+插入测试数据.bat
+
+# 方式二：使用命令行
+node insertHiveTestData.js
+```
+
+## ☁️ 部署到云服务器
+
+详细的云服务器部署指南，请查看：[部署指南.md](./部署指南.md)
+
+**快速部署步骤：**
+
+1. 在本地构建项目：`npm run build` 和 `npm run build:server`
+2. 上传 `dist/`、`dist-server/server.js`、`.env`、`package.json` 到服务器
+3. 在服务器上安装依赖：`npm install --production`
+4. 使用 PM2 启动：`pm2 start ecosystem.config.js`
+5. 配置 Nginx 反向代理（详见部署指南）
 
 ## 🤖 配置通义千问 AI 分析（可选但推荐）
 

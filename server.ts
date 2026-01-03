@@ -125,14 +125,19 @@ const startServer = async () => {
     }
     
     // Start the server
-    app.listen(PORT, () => {
-      console.log(`Backend server running on http://localhost:${PORT}`);
-      console.log(`API Endpoints:`);
-      console.log(`  GET  http://localhost:${PORT}/api/health`);
-      console.log(`  GET  http://localhost:${PORT}/api/beehive/latest (requires token)`);
-      console.log(`  GET  http://localhost:${PORT}/api/beehive/history?limit=40 (requires token)`);
-      console.log(`  POST http://localhost:${PORT}/api/beehive (requires token)`);
-      console.log(`Token format: Authorization: Bearer ${process.env.API_TOKEN || '123456789'}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`========================================`);
+      console.log(`  智慧蜂场管理系统 - 后端服务器`);
+      console.log(`========================================`);
+      console.log(`服务器地址: http://0.0.0.0:${PORT}`);
+      console.log(`本地访问: http://localhost:${PORT}`);
+      console.log(`API 端点:`);
+      console.log(`  GET  /api/health (健康检查，无需token)`);
+      console.log(`  GET  /api/beehive/latest (获取最新数据，需要token)`);
+      console.log(`  GET  /api/beehive/history?limit=40 (获取历史数据，需要token)`);
+      console.log(`  POST /api/beehive (插入数据，需要token)`);
+      console.log(`Token 格式: Authorization: Bearer ${process.env.API_TOKEN || '123456789'}`);
+      console.log(`========================================`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

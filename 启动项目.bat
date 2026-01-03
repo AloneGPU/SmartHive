@@ -1,0 +1,75 @@
+@echo off
+chcp 65001 >nul
+echo ========================================
+echo   智慧蜂场管理系统 - 启动脚本
+echo ========================================
+echo.
+
+REM 检查 Node.js 是否安装
+where node >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [错误] 未检测到 Node.js，请先安装 Node.js
+    echo 下载地址: https://nodejs.org/
+    pause
+    exit /b 1
+)
+
+echo [信息] 检测到 Node.js 版本:
+node --version
+echo.
+
+REM 检查是否存在 node_modules
+if not exist "node_modules" (
+    echo [信息] 首次运行，正在安装依赖...
+    echo 这可能需要几分钟，请耐心等待...
+    echo.
+    call npm install
+    if %ERRORLEVEL% NEQ 0 (
+        echo [错误] 依赖安装失败，请检查网络连接
+        pause
+        exit /b 1
+    )
+    echo.
+    echo [成功] 依赖安装完成！
+    echo.
+)
+
+REM 检查是否存在 .env 文件
+if not exist ".env" (
+    echo [警告] 未找到 .env 配置文件
+    echo 正在创建默认配置文件...
+    echo.
+    (
+        echo # 后端服务器配置
+        echo PORT=3001
+        echo API_TOKEN=123456789
+        echo.
+        echo # MySQL数据库配置
+        echo DB_HOST=localhost
+        echo DB_USER=root
+        echo DB_PASSWORD=
+        echo DB_NAME=smarthive
+        echo DB_PORT=3306
+        echo.
+        echo # Gemini AI API配置（可选）
+        echo GEMINI_API_KEY=
+    ) > .env
+    echo [信息] 已创建 .env 文件，请编辑此文件配置数据库密码
+    echo.
+    pause
+)
+
+echo [信息] 正在启动服务器...
+echo.
+echo 前端地址: http://localhost:5173
+echo 后端地址: http://localhost:3001
+echo.
+echo 提示: 按 Ctrl+C 可以停止服务器
+echo ========================================
+echo.
+
+REM 启动项目
+call npm start
+
+pause
+

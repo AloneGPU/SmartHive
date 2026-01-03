@@ -1,20 +1,228 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 智慧蜂场管理系统 (SmartHive Connect)
 
-# Run and deploy your AI Studio app
+一个基于 React + Node.js + MySQL 的智能蜂场监控系统，支持实时数据采集、AI分析和可视化展示。
 
-This contains everything you need to run your app locally.
+## 📋 系统要求
 
-View your app in AI Studio: https://ai.studio/apps/drive/1u9-_5S_BDAHzjtX0NYjSiAvfoLB_pw_D
+- **Node.js**: 版本 18.0 或更高（推荐使用 20.x）
+- **MySQL**: 版本 5.7 或更高（8.0 推荐）
+- **操作系统**: Windows 10/11（本项目已针对 Windows 优化）
 
-## Run Locally
+## 🚀 快速开始
 
-**Prerequisites:**  Node.js
+### 第一步：安装 Node.js
 
+如果您的电脑还没有安装 Node.js，请：
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. 访问 [Node.js 官网](https://nodejs.org/)
+2. 下载并安装 LTS 版本（推荐 20.x）
+3. 安装完成后，打开命令提示符（CMD）或 PowerShell，输入以下命令验证：
+   ```bash
+   node --version
+   npm --version
+   ```
+   如果显示版本号，说明安装成功。
+
+### 第二步：安装 MySQL
+
+1. 访问 [MySQL 官网](https://dev.mysql.com/downloads/mysql/)
+2. 下载 MySQL Community Server（Windows 版本）
+3. 安装时记住您设置的 root 用户密码
+4. 确保 MySQL 服务正在运行（可以在 Windows 服务中查看）
+
+### 第三步：配置项目
+
+1. **复制环境变量文件**
+   
+   在项目根目录下创建一个名为 `.env` 的文件（注意：文件名以点开头，没有扩展名）
+   
+   如果项目中有 `env.example` 文件，您可以复制它：
+   ```bash
+   copy env.example .env
+   ```
+   
+   或者手动创建 `.env` 文件，内容如下：
+   ```
+   # 后端服务器配置
+   PORT=3001
+   API_TOKEN=123456789
+
+   # MySQL数据库配置（请根据您的实际情况修改）
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=你的MySQL密码
+   DB_NAME=smarthive
+   DB_PORT=3306
+
+   # Gemini AI API配置（可选，用于AI分析功能）
+   GEMINI_API_KEY=你的Gemini_API密钥（可选）
+   ```
+
+2. **修改数据库配置**
+   
+   打开 `.env` 文件，将 `DB_PASSWORD` 改为您安装 MySQL 时设置的 root 密码。
+
+### 第四步：安装依赖
+
+在项目根目录下，打开命令提示符（CMD）或 PowerShell，运行：
+
+```bash
+npm install
+```
+
+这个过程可能需要几分钟，请耐心等待。
+
+### 第五步：启动项目
+
+#### 方式一：使用启动脚本（推荐，最简单）
+
+1. 双击运行项目根目录下的 `启动项目.bat` 文件
+2. 等待两个窗口打开：
+   - 蓝色窗口：后端服务器（运行在 http://localhost:3001）
+   - 绿色窗口：前端开发服务器（运行在 http://localhost:5173）
+3. 浏览器会自动打开，如果没有，请手动访问：http://localhost:5173
+
+#### 方式二：使用命令行
+
+在项目根目录下运行：
+
+```bash
+npm start
+```
+
+这会同时启动前端和后端服务器。
+
+#### 方式三：分别启动（用于调试）
+
+**启动后端服务器：**
+```bash
+npm run dev:server
+```
+
+**启动前端服务器（新开一个命令行窗口）：**
+```bash
+npm run dev
+```
+
+然后访问 http://localhost:5173
+
+## 📁 项目结构
+
+```
+项目根目录/
+├── components/          # React 组件
+│   ├── AIAnalysisPanel.tsx
+│   ├── SensorGrid.tsx
+│   └── ...
+├── services/            # 服务层
+│   ├── databaseService.ts  # 数据库服务
+│   ├── dataService.ts      # 数据服务
+│   └── geminiService.ts    # AI 服务
+├── server.ts           # 后端服务器入口
+├── App.tsx             # 前端应用入口
+├── package.json        # 项目依赖配置
+├── vite.config.ts      # Vite 构建配置
+├── tsconfig.json       # TypeScript 配置
+└── .env                # 环境变量配置（需要自己创建）
+```
+
+## 🔧 常见问题
+
+### 1. 端口被占用
+
+如果遇到端口被占用的错误：
+
+- **后端端口 3001 被占用**：修改 `.env` 文件中的 `PORT=3001` 为其他端口（如 `PORT=3002`）
+- **前端端口 5173 被占用**：修改 `vite.config.ts` 中的 `port: 5173` 为其他端口
+
+### 2. 数据库连接失败
+
+**错误信息**：`Database connection error` 或 `ER_ACCESS_DENIED_ERROR`
+
+**解决方法**：
+1. 确认 MySQL 服务正在运行
+2. 检查 `.env` 文件中的数据库配置是否正确
+3. 确认 MySQL root 密码是否正确
+4. 如果 MySQL 运行在非默认端口，请修改 `DB_PORT`
+
+### 3. 找不到模块错误
+
+如果遇到 `Cannot find module` 错误：
+
+```bash
+# 删除 node_modules 文件夹和 package-lock.json
+rmdir /s node_modules
+del package-lock.json
+
+# 重新安装依赖
+npm install
+```
+
+### 4. 前端页面空白
+
+1. 检查后端服务器是否正常运行（访问 http://localhost:3001/api/health）
+2. 打开浏览器开发者工具（F12），查看控制台是否有错误
+3. 确认 `.env` 文件中的 `API_TOKEN` 配置正确
+
+### 5. 数据库表自动创建
+
+项目首次启动时会自动创建数据库和表结构，如果数据库不存在会自动创建。如果遇到权限问题，请确保 MySQL root 用户有创建数据库的权限。
+
+## 🎯 功能说明
+
+### 实时监控
+- 温度、湿度、重量等传感器数据实时显示
+- 蜜蜂进出数量统计
+- 胡蜂检测
+- GPS 位置信息
+
+### 数据分析
+- 历史数据趋势图表
+- AI 健康分析（需要配置 Gemini API）
+- 行为洞察
+- 生产力分析
+
+### 系统管理
+- 连接状态监控
+- 数据同步
+- 配置管理
+
+## 📝 开发说明
+
+### 构建生产版本
+
+```bash
+# 构建前端
+npm run build
+
+# 构建后端
+npm run build:server
+```
+
+### 预览生产版本
+
+```bash
+npm run preview
+```
+
+## 🔐 安全提示
+
+1. **不要将 `.env` 文件提交到 Git**
+2. **生产环境请修改默认的 API_TOKEN**
+3. **数据库密码请使用强密码**
+
+## 📞 技术支持
+
+如果遇到问题，请检查：
+1. Node.js 和 MySQL 是否正确安装
+2. 环境变量配置是否正确
+3. 端口是否被占用
+4. 防火墙是否阻止了连接
+
+## 📄 许可证
+
+本项目仅供学习和研究使用。
+
+---
+
+**祝您使用愉快！** 🐝

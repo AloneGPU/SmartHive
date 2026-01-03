@@ -8,8 +8,8 @@ dotenv.config();
 const DB_CONFIG = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '2006520Zlt',
-  database: process.env.DB_NAME || 'tmp',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'smarthive',
   port: parseInt(process.env.DB_PORT || '3306')
 };
 

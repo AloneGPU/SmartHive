@@ -49,11 +49,12 @@ export const fetchHistoryData = async (baseUrl: string, token: string, limit: nu
 };
 
 /**
- * 测试后端连接连通性
+ * 测试后端连接连通性（health端点不需要token）
  */
 export const testConnection = async (baseUrl: string, token: string, mode: ConnectionMode = 'CLOUD'): Promise<boolean> => {
   try {
-    const response = await authorizedFetch(`${baseUrl}/api/health`, token);
+    // health端点不需要token，直接访问
+    const response = await fetch(`${baseUrl}/api/health`);
     return response.ok;
   } catch (e) {
     return false;

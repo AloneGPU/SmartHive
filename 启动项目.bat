@@ -51,8 +51,9 @@ if not exist ".env" (
         echo DB_NAME=smarthive
         echo DB_PORT=3306
         echo.
-        echo # Gemini AI API配置（可选）
-        echo GEMINI_API_KEY=
+        echo # 通义千问 (Qwen) AI API配置（可选）
+        echo # 获取API Key: https://dashscope.console.aliyun.com/
+        echo QWEN_API_KEY=
     ) > .env
     echo [信息] 已创建 .env 文件，请编辑此文件配置数据库密码
     echo.

@@ -54,8 +54,9 @@
    DB_NAME=smarthive
    DB_PORT=3306
 
-   # Gemini AI API配置（可选，用于AI分析功能）
-   GEMINI_API_KEY=你的Gemini_API密钥（可选）
+   # 通义千问 (Qwen) AI API配置（用于AI分析功能，推荐国内用户使用）
+   # 获取API Key: https://dashscope.console.aliyun.com/
+   QWEN_API_KEY=你的通义千问API密钥（可选）
    ```
 
 2. **修改数据库配置**
@@ -117,7 +118,7 @@ npm run dev
 ├── services/            # 服务层
 │   ├── databaseService.ts  # 数据库服务
 │   ├── dataService.ts      # 数据服务
-│   └── geminiService.ts    # AI 服务
+│   └── qwenService.ts       # AI 服务（通义千问）
 ├── server.ts           # 后端服务器入口
 ├── App.tsx             # 前端应用入口
 ├── package.json        # 项目依赖配置
@@ -178,7 +179,7 @@ npm install
 
 ### 数据分析
 - 历史数据趋势图表
-- AI 健康分析（需要配置 Gemini API）
+- AI 健康分析（使用通义千问 Qwen API，适合国内用户）
 - 行为洞察
 - 生产力分析
 
@@ -205,11 +206,44 @@ npm run build:server
 npm run preview
 ```
 
+## 🤖 配置通义千问 AI 分析（可选但推荐）
+
+系统支持使用阿里云通义千问（Qwen）进行智能分析，适合国内用户使用。
+
+### 获取 API Key
+
+1. 访问 [阿里云 DashScope 控制台](https://dashscope.console.aliyun.com/)
+2. 注册/登录阿里云账号
+3. 开通 DashScope 服务
+4. 在 API-KEY 管理页面创建新的 API Key
+5. 将 API Key 复制到 `.env` 文件中的 `QWEN_API_KEY`
+
+### 支持的模型
+
+- **qwen-turbo**: 快速响应，适合实时分析（推荐）
+- **qwen-plus**: 增强版，平衡性能和质量
+- **qwen-max**: 最强性能，适合复杂分析
+- **qwen-max-longcontext**: 支持长文本上下文
+
+### 配置步骤
+
+1. 在 `.env` 文件中添加：
+   ```
+   QWEN_API_KEY=sk-xxxxxxxxxxxxx
+   ```
+
+2. 在前端页面的 AI 分析面板中也可以直接配置 API Key
+
+3. 配置完成后，点击"生成智能生产报告"即可使用 AI 分析功能
+
+**注意**: AI 分析功能需要网络连接到阿里云服务，请确保网络环境正常。
+
 ## 🔐 安全提示
 
 1. **不要将 `.env` 文件提交到 Git**
 2. **生产环境请修改默认的 API_TOKEN**
 3. **数据库密码请使用强密码**
+4. **妥善保管您的 Qwen API Key，避免泄露**
 
 ## 📞 技术支持
 

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Sparkles, RefreshCw, CheckCircle, Settings2, Key, Info, X, ShieldCheck, Database, Server, Terminal } from 'lucide-react';
 import { AIAnalysisResult, CustomAIConfig } from '../types';
-import { validateConfig } from '../services/geminiService';
+import { validateConfig } from '../services/qwenService';
 import { testGatewayConnection } from '../services/dataService';
 
 interface Props {
@@ -37,15 +37,15 @@ export const AIAnalysisPanel: React.FC<Props> = ({
     // 1. 测试数据库网关
     const dbOk = await testGatewayConnection(tempConfig.apiBaseUrl || '', tempConfig.apiToken || '');
     // 2. 测试 AI 密钥
-    const aiOk = await validateConfig(tempConfig.apiKey || process.env.API_KEY || '', tempConfig.modelName || 'gemini-3-flash-preview');
+    const aiOk = await validateConfig(tempConfig.apiKey || process.env.QWEN_API_KEY || process.env.API_KEY || '', tempConfig.modelName || 'qwen-turbo');
     
     setStatus({ db: dbOk, ai: aiOk });
 
     if (dbOk && aiOk) {
       onUpdateConfig({
         apiKey: tempConfig.apiKey || '',
-        modelName: tempConfig.modelName || 'Qwen-3',//默认模型
-        apiBaseUrl: tempConfig.apiBaseUrl || 'http://localhost:3000',
+        modelName: tempConfig.modelName || 'qwen-turbo',//默认模型
+        apiBaseUrl: tempConfig.apiBaseUrl || 'http://localhost:3001',
         apiToken: tempConfig.apiToken || '',
         isActive: true
       });
@@ -120,7 +120,7 @@ export const AIAnalysisPanel: React.FC<Props> = ({
               <section className="space-y-3 border-t border-gray-50 pt-4">
                 <div className="flex items-center gap-2 text-yellow-600 mb-1">
                   <Sparkles size={14} />
-                  <span className="text-xs font-bold">2. Gemini AI 决策引擎</span>
+                  <span className="text-xs font-bold">2. 通义千问 (Qwen) AI 决策引擎</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                    <div>
@@ -134,12 +134,16 @@ export const AIAnalysisPanel: React.FC<Props> = ({
                    </div>
                    <div>
                       <label className="block text-[9px] font-bold text-gray-500 mb-1">模型名</label>
-                      <input 
-                        type="text"
+                      <select 
                         value={tempConfig.modelName}
                         onChange={e => setTempConfig({...tempConfig, modelName: e.target.value})}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs"
-                      />
+                      >
+                        <option value="qwen-turbo">qwen-turbo (快速)</option>
+                        <option value="qwen-plus">qwen-plus (增强)</option>
+                        <option value="qwen-max">qwen-max (最强)</option>
+                        <option value="qwen-max-longcontext">qwen-max-longcontext (长文本)</option>
+                      </select>
                    </div>
                 </div>
               </section>

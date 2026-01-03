@@ -11,7 +11,7 @@ import { DataAnalysisPanel } from './components/DataAnalysisPanel';
 import { EventLog } from './components/EventLog';
 import { WeatherWidget } from './components/WeatherWidget';
 import { fetchLiveHiveData, fetchHistoryData } from './services/dataService';
-import { analyzeHiveHealth } from './services/geminiService';
+import { analyzeHiveHealth } from './services/qwenService';
 import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig, HiveConfig } from './types';
 import { Database, ShieldCheck, Zap, Globe, Cpu, Server, RefreshCw, LayoutDashboard, BarChart2, CheckCircle, Smartphone } from 'lucide-react';
 
@@ -58,13 +58,13 @@ function App() {
   
   const [aiConfig, setAiConfig] = useState<CustomAIConfig>(() => {
     const saved = localStorage.getItem('SMART_HIVE_AI_CONFIG');
-    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'Qwen-3', apiBaseUrl: 'http://localhost:3001', apiToken: '123456789', isActive: true };
+    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'qwen-turbo', apiBaseUrl: 'http://localhost:3001', apiToken: '123456789', isActive: true };
   });
 
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [connectStep, setConnectStep] = useState(0);
-  const steps = ["解析后端 API 地址", "注入鉴权令牌 (Token)", "同步 MySQL 时序库", "挂载 Gemini 分析引擎"];
+  const steps = ["解析后端 API 地址", "注入鉴权令牌 (Token)", "同步 MySQL 时序库", "挂载 Qwen 分析引擎"];
 
   const handleUpdateConfig = (newConfig: CustomAIConfig) => {
     setAiConfig(newConfig);

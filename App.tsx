@@ -200,7 +200,7 @@ function App() {
                 ) : (
                   <div className="space-y-6">
                      <DataAnalysisPanel history={historyData} />
-                     <DetailedAnalytics history={historyData} currentData={hiveData} />
+                     <DetailedAnalytics history={historyData} currentData={hiveData} aiConfig={aiConfig} />
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <BehaviorInsights data={hiveData} />
                         <ProductivityPanel 

@@ -41,3 +41,10 @@ export interface CustomAIConfig {
   apiToken: string; // 新增：访问后端 API 的授权令牌
   isActive: boolean;
 }
+
+export interface PhysicalAssessmentResult {
+  生产效率: number; // 0-100
+  控温能力: number; // 0-100
+  归巢防御: number; // 0-100
+  lastUpdated: number;
+}

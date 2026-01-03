@@ -278,7 +278,7 @@ export const analyzePhysicalAssessment = async (
     // 如果AI分析失败，使用基于规则的简单计算
     return {
       生产效率: Math.min(100, Math.max(0, (data.weight / 50) * 100)),
-      控温能力: data.temperature >= 33 && data.temperature <= 36 ? 95 : Math.max(0, 100 - Math.abs(data.temperature - 34.5) * 10),
+      控温能力: data.temperature >= 30 && data.temperature <= 38 ? Math.max(50, 100 - Math.abs(data.temperature - 34.5) * 5) : Math.max(20, 100 - Math.abs(data.temperature - 34.5) * 8),
       归巢防御: data.beesOut > 0 ? Math.min(100, (data.beesIn / data.beesOut) * 100) : 100,
       lastUpdated: Date.now()
     };

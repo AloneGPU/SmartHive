@@ -124,13 +124,11 @@ export const DetailedAnalytics: React.FC<Props> = ({ history, currentData, aiCon
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={75}
-                  outerRadius={115}
-                  paddingAngle={4}
+                  innerRadius={65}
+                  outerRadius={95}
+                  paddingAngle={6}
                   dataKey="value"
-                  label={({ name, value }) => {
-                    return `${name}\n${value.toFixed(0)}分`;
-                  }}
+                  label={false}
                   labelLine={false}
                 >
                   {pieData.map((entry, index) => (
@@ -143,10 +141,13 @@ export const DetailedAnalytics: React.FC<Props> = ({ history, currentData, aiCon
                 />
                 <Legend 
                   verticalAlign="bottom" 
-                  height={36}
+                  height={56}
                   formatter={(value) => value}
                   iconType="circle"
-                  wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
+                  wrapperStyle={{ fontSize: '11px', paddingTop: '20px', paddingBottom: '10px', lineHeight: '1.5' }}
+                  layout="horizontal"
+                  align="center"
+                  margin={{ top: 20, bottom: 20 }}
                 />
               </PieChart>
             </ResponsiveContainer>

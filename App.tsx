@@ -107,8 +107,11 @@ function App() {
     
     const intervalId = setInterval(async () => {
       try {
+        // 同时刷新最新数据和历史数据
         const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
+        const history = await fetchHistoryData(aiConfig.apiBaseUrl, aiConfig.apiToken);
         setHiveData(data);
+        setHistoryData(history);
       } catch (error) {
         console.error('Auto-refresh failed:', error);
         // 不改变连接状态，只是静默失败，下次再试

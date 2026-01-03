@@ -10,46 +10,56 @@ interface Props {
 }
 
 export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
+  // 如果没有历史数据，显示空状态
+  const hasData = history && history.length > 0;
   
   // 1. Correlation Data: Temperature vs Bees Out
   const correlationData = useMemo(() => {
+    if (!hasData) return [];
     return history.map(h => ({
-      temp: h.temp,
+      temp: h.temp || h.temperature || 0,
       activity: h.beesOut || 0,
       time: h.time
     })).filter(d => d.temp > 0); // Filter invalid data
-  }, [history]);
+  }, [history, hasData]);
 
   // 2. Health Trend (Calculated)
   const healthTrendData = useMemo(() => {
+    if (!hasData) return [];
     return history.map(h => {
       // Simple heuristic health score
       // Optimal temp ~35, deviation reduces score
-      const tempScore = Math.max(0, 100 - Math.abs(h.temp - 35) * 5);
+      const temp = h.temp || h.temperature || 0;
+      const weight = h.weight || 0;
+      const tempScore = Math.max(0, 100 - Math.abs(temp - 35) * 5);
       // More weight usually means more honey (simplified)
-      const weightScore = Math.min(100, (h.weight / 50) * 100);
+      const weightScore = Math.min(100, (weight / 50) * 100);
       
       const score = (tempScore * 0.6 + weightScore * 0.4).toFixed(1);
       
       return {
         time: h.time,
         score: parseFloat(score),
-        temp: h.temp
+        temp: temp
       };
     });
-  }, [history]);
+  }, [history, hasData]);
 
   // 3. Activity by Hour (Aggregation)
   const hourlyActivity = useMemo(() => {
-    // Since history might not span many days, we just simulate "time of day" based on the time string
-    // Assuming time string is "HH:mm:ss" or ISO. Let's try to parse it.
-    // If format is HH:mm:ss
+    if (!hasData) {
+      return Array(24).fill(0).map((_, hour) => ({
+        hour: `${hour}:00`,
+        avgActivity: 0
+      }));
+    }
+    
     const hours = Array(24).fill(0);
     const counts = Array(24).fill(0);
 
     history.forEach(h => {
       try {
-        const timePart = h.time.split(' ')[1] || h.time; // Handle "YYYY-MM-DD HH:mm:ss" or "HH:mm:ss"
+        const timePart = h.time ? (h.time.split(' ')[1] || h.time) : ''; // Handle "YYYY-MM-DD HH:mm:ss" or "HH:mm:ss"
         const hour = parseInt(timePart.split(':')[0], 10);
         if (!isNaN(hour) && hour >= 0 && hour < 24) {
           hours[hour] += (h.beesOut || 0);
@@ -64,10 +74,19 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
       hour: `${hour}:00`,
       avgActivity: counts[hour] > 0 ? Math.round(total / counts[hour]) : 0
     }));
-  }, [history]);
+  }, [history, hasData]);
 
   return (
     <div className="space-y-6">
+      {!hasData && (
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center text-gray-400">
+          <p className="text-sm">暂无历史数据</p>
+          <p className="text-xs mt-2">请等待传感器数据上传或运行测试数据脚本</p>
+        </div>
+      )}
+      
+      {hasData && (
+        <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Correlation Analysis */}
@@ -139,6 +158,8 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
             </ResponsiveContainer>
           </div>
         </div>
+        </>
+      )}
     </div>
   );
 };

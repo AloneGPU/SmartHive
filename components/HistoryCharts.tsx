@@ -6,10 +6,28 @@ interface Props {
 }
 
 export const HistoryCharts: React.FC<Props> = ({ data }) => {
+  // 如果没有数据，显示提示
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-semibold text-gray-800">环境与状态趋势</h3>
+        </div>
+        <div className="h-72 w-full flex items-center justify-center">
+          <div className="text-center text-gray-400">
+            <p className="text-sm">暂无历史数据</p>
+            <p className="text-xs mt-2">请等待传感器数据上传或运行测试数据脚本</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-semibold text-gray-800">环境与状态趋势</h3>
+        <span className="text-xs text-gray-500">共 {data.length} 条记录</span>
       </div>
       
       <div className="h-72 w-full">

@@ -82,10 +82,11 @@ export const fetchLiveHiveDataFromDB = async (): Promise<BeehiveData | null> => 
  */
 export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<BeehiveData[]> => {
   try {
-    // 参数化查询，防止SQL注入，并限制最大查询数量
-    const safeLimit = Math.min(Math.max(1, limit), 1000); // 限制在1-1000之间
-    const query = 'SELECT * FROM hive_data ORDER BY id DESC LIMIT ?';
-    const [rows] = await pool.execute(query, [safeLimit]);
+    // 限制最大查询数量，防止过大查询
+    const safeLimit = Math.min(Math.max(1, Math.floor(limit)), 1000); // 限制在1-1000之间，确保是整数
+    // 注意：MySQL的LIMIT子句不支持参数化查询，但我们已经验证了safeLimit是安全的整数
+    const query = `SELECT * FROM hive_data ORDER BY id DESC LIMIT ${safeLimit}`;
+    const [rows] = await pool.execute(query);
     
     if (Array.isArray(rows) && rows.length > 0) {
       return rows.map(mapHiveDataToBeehiveData);

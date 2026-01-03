@@ -44,11 +44,19 @@ export const fetchHistoryData = async (baseUrl: string, token: string, limit: nu
     }
     const data: BeehiveData[] = await response.json();
     
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
     // Transform to chart friendly format and sort by time ascending
     return data.map(item => ({
       ...item,
-      time: new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      temp: item.temperature, // Map temperature to temp for existing charts
+      time: new Date(item.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+      temp: item.temperature || 0, // Map temperature to temp for existing charts
+      weight: item.weight || 0,
+      humidity: item.humidity || 0,
+      beesIn: item.beesIn || 0,
+      beesOut: item.beesOut || 0,
     })).reverse();
   } catch (error) {
     console.error('获取历史数据失败:', error);

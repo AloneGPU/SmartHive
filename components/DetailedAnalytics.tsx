@@ -90,12 +90,14 @@ export const DetailedAnalytics: React.FC<Props> = ({ history, currentData, aiCon
     { name: '归巢防御', value: 50, color: '#f59e0b', fullValue: 100 },
   ];
 
-  // 构造出勤分布图数据 (模拟数据处理)
-  const activityDistribution = history.map(h => ({
-    time: h.time,
-    in: Math.floor(Math.random() * 200 + 100),
-    out: Math.floor(Math.random() * 200 + 100)
-  })).slice(-12);
+  // 构造出勤分布图数据（使用实际数据）
+  const activityDistribution = history && history.length > 0 
+    ? history.slice(-12).map(h => ({
+      time: h.time || '',
+      in: h.beesIn || 0,
+      out: h.beesOut || 0
+    }))
+    : [];
 
   return (
     <div className="space-y-6">

@@ -13,8 +13,15 @@ const DB_CONFIG = {
   port: parseInt(process.env.DB_PORT || '3306')
 };
 
-// Create a connection pool
-const pool = mysql.createPool(DB_CONFIG);
+// Create a connection pool with optimized settings
+const pool = mysql.createPool({
+  ...DB_CONFIG,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
+});
 
 /**
  * Test database connection
@@ -75,9 +82,10 @@ export const fetchLiveHiveDataFromDB = async (): Promise<BeehiveData | null> => 
  */
 export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<BeehiveData[]> => {
   try {
-    // Only query hive_data table, beehive_data table might not exist
-    const query = `SELECT * FROM hive_data ORDER BY id DESC LIMIT ${limit}`;
-    const [rows] = await pool.execute(query);
+    // 参数化查询，防止SQL注入，并限制最大查询数量
+    const safeLimit = Math.min(Math.max(1, limit), 1000); // 限制在1-1000之间
+    const query = 'SELECT * FROM hive_data ORDER BY id DESC LIMIT ?';
+    const [rows] = await pool.execute(query, [safeLimit]);
     
     if (Array.isArray(rows) && rows.length > 0) {
       return rows.map(mapHiveDataToBeehiveData);
@@ -96,9 +104,21 @@ export const fetchHistoryDataFromDB = async (limit: number = 40): Promise<Beehiv
  */
 export const insertBeehiveData = async (data: Omit<BeehiveData, 'timestamp'>): Promise<void> => {
   try {
+    // 数据验证和范围检查
+    const validatedData = {
+      temperature: Math.max(-50, Math.min(100, data.temperature || 0)),
+      humidity: Math.max(0, Math.min(100, data.humidity || 0)),
+      weight: Math.max(0, Math.min(1000, data.weight || 0)),
+      beesIn: Math.max(0, Math.floor(data.beesIn || 0)),
+      beesOut: Math.max(0, Math.floor(data.beesOut || 0)),
+      hornetsDetected: Math.max(0, Math.floor(data.hornetsDetected || 0)),
+      latitude: data.latitude !== undefined ? Math.max(-90, Math.min(90, data.latitude)) : null,
+      longitude: data.longitude !== undefined ? Math.max(-180, Math.min(180, data.longitude)) : null
+    };
+
     await pool.execute(
       'INSERT INTO hive_data (timestamp, temperature, humidity, weight, beesIn, beesOut, hornetsDetected, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [Date.now(), data.temperature, data.humidity, data.weight, data.beesIn, data.beesOut, data.hornetsDetected, data.latitude, data.longitude]
+      [Date.now(), validatedData.temperature, validatedData.humidity, validatedData.weight, validatedData.beesIn, validatedData.beesOut, validatedData.hornetsDetected, validatedData.latitude, validatedData.longitude]
     );
   } catch (error) {
     console.error('Error inserting beehive data:', error);
@@ -134,7 +154,7 @@ export const initializeDatabase = async (): Promise<void> => {
        }
     }
 
-    // Create hive_data table if it doesn't exist
+    // Create hive_data table if it doesn't exist with indexes for better performance
     const createHiveDataTableQuery = `
       CREATE TABLE IF NOT EXISTS hive_data (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -147,8 +167,10 @@ export const initializeDatabase = async (): Promise<void> => {
         hornetsDetected INT NOT NULL,
         latitude FLOAT,
         longitude FLOAT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_timestamp (timestamp),
+        INDEX idx_created_at (created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `;
     
     await pool.execute(createHiveDataTableQuery);

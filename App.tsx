@@ -99,14 +99,22 @@ function App() {
     if (aiConfig.isActive && connectionStatus === 'disconnected') {
       handleSync();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aiConfig.isActive]);
 
   useEffect(() => {
     if (connectionStatus !== 'connected') return;
+    
     const intervalId = setInterval(async () => {
-      const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
-      setHiveData(data);
+      try {
+        const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
+        setHiveData(data);
+      } catch (error) {
+        console.error('Auto-refresh failed:', error);
+        // 不改变连接状态，只是静默失败，下次再试
+      }
     }, 15000); 
+    
     return () => clearInterval(intervalId);
   }, [connectionStatus, aiConfig.apiBaseUrl, aiConfig.apiToken]);
 

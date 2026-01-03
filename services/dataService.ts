@@ -33,8 +33,15 @@ export const fetchLiveHiveData = async (baseUrl: string, token: string, mode: Co
 
 export const fetchHistoryData = async (baseUrl: string, token: string, limit: number = 40, mode: ConnectionMode = 'CLOUD'): Promise<any[]> => {
   try {
-    const response = await authorizedFetch(`${baseUrl}/api/beehive/history?limit=${limit}`, token);
-    if (!response.ok) throw new Error('历史记录加载失败');
+    // 限制查询数量，防止过大请求
+    const safeLimit = Math.min(Math.max(1, limit), 1000);
+    const response = await authorizedFetch(`${baseUrl}/api/beehive/history?limit=${safeLimit}`, token);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('认证失败，请检查Token');
+      }
+      throw new Error('历史记录加载失败');
+    }
     const data: BeehiveData[] = await response.json();
     
     // Transform to chart friendly format and sort by time ascending
@@ -44,6 +51,7 @@ export const fetchHistoryData = async (baseUrl: string, token: string, limit: nu
       temp: item.temperature, // Map temperature to temp for existing charts
     })).reverse();
   } catch (error) {
+    console.error('获取历史数据失败:', error);
     return [];
   }
 };

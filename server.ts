@@ -13,11 +13,22 @@ import { BeehiveData } from './types';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(process.env.PORT || '3001', 10);
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+// CORS配置：生产环境应该限制允许的源
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173']
+    : true, // 开发环境允许所有源
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// 限制请求体大小（防止DoS攻击）
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Token verification middleware
 const verifyToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -102,9 +113,23 @@ app.get('/api/beehive/history', verifyToken, async (req, res) => {
 app.post('/api/beehive', verifyToken, async (req, res) => {
   try {
     const data = req.body as Omit<BeehiveData, 'timestamp'>;
+    
+    // 基本数据验证
+    if (typeof data.temperature !== 'number' || 
+        typeof data.humidity !== 'number' || 
+        typeof data.weight !== 'number') {
+      return res.status(400).json({
+        message: 'Invalid data format: temperature, humidity, and weight must be numbers'
+      });
+    }
+
     await insertBeehiveData(data);
-    res.status(201).json({ message: 'Beehive data inserted successfully' });
+    res.status(201).json({ 
+      message: 'Beehive data inserted successfully',
+      timestamp: Date.now()
+    });
   } catch (error) {
+    console.error('Error inserting beehive data:', error);
     res.status(500).json({
       message: 'Failed to insert beehive data',
       error: error instanceof Error ? error.message : String(error)
@@ -112,9 +137,31 @@ app.post('/api/beehive', verifyToken, async (req, res) => {
   }
 });
 
+// 验证环境变量
+const validateEnvironment = () => {
+  const warnings: string[] = [];
+  
+  if (!process.env.DB_PASSWORD || process.env.DB_PASSWORD === '') {
+    warnings.push('⚠️  警告: DB_PASSWORD 未设置，数据库连接可能失败');
+  }
+  
+  if (process.env.API_TOKEN === '123456789' || !process.env.API_TOKEN) {
+    warnings.push('⚠️  安全警告: 使用默认 API_TOKEN，生产环境请修改为复杂密码');
+  }
+  
+  if (warnings.length > 0) {
+    console.warn('\n环境变量检查:');
+    warnings.forEach(warning => console.warn(warning));
+    console.warn('');
+  }
+};
+
 // Initialize database and start server
 const startServer = async () => {
   try {
+    // 验证环境变量
+    validateEnvironment();
+    
     // Initialize database table
     try {
         await initializeDatabase();

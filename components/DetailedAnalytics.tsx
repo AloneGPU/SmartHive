@@ -60,7 +60,8 @@ export const DetailedAnalytics: React.FC<Props> = ({ history, currentData, aiCon
     };
 
     loadAssessment();
-  }, [currentData, history, aiConfig]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentData?.timestamp, history.length, aiConfig?.isActive, aiConfig?.apiKey]);
 
   // 构造环形饼图数据（移除蜂力强度，只保留三个维度）
   // 将分数转换为百分比，使饼图更直观

@@ -11,6 +11,7 @@ interface Props {
   loading: boolean;
   config: CustomAIConfig;
   onUpdateConfig: (config: CustomAIConfig) => void;
+  isAdmin?: boolean;
 }
 
 export const AIAnalysisPanel: React.FC<Props> = ({ 
@@ -18,7 +19,8 @@ export const AIAnalysisPanel: React.FC<Props> = ({
   onAnalyze, 
   loading, 
   config,
-  onUpdateConfig
+  onUpdateConfig,
+  isAdmin = false
 }) => {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [tempConfig, setTempConfig] = useState<Partial<CustomAIConfig>>({
@@ -62,17 +64,19 @@ export const AIAnalysisPanel: React.FC<Props> = ({
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             <Sparkles className="text-yellow-600" size={20} />
-            系统深度设置
+            {isAdmin ? "系统深度设置与分析" : "智能生产报告"}
           </h2>
-          <button 
-            onClick={() => setIsConfiguring(!isConfiguring)}
-            className={`p-2 rounded-xl transition-all ${isConfiguring ? 'bg-yellow-200 text-yellow-800 shadow-inner' : 'bg-white/80 text-gray-500 shadow-sm'}`}
-          >
-            <Settings2 size={18} />
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={() => setIsConfiguring(!isConfiguring)}
+              className={`p-2 rounded-xl transition-all ${isConfiguring ? 'bg-yellow-200 text-yellow-800 shadow-inner' : 'bg-white/80 text-gray-500 shadow-sm'}`}
+            >
+              <Settings2 size={18} />
+            </button>
+          )}
         </div>
 
-        {isConfiguring ? (
+        {isConfiguring && isAdmin ? (
           <div className="flex-1 bg-white/90 backdrop-blur-md rounded-xl p-4 border border-yellow-100 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar">
             <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">集成参数配置</h3>
@@ -214,8 +218,17 @@ export const AIAnalysisPanel: React.FC<Props> = ({
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center py-8 text-gray-400 bg-white/30 rounded-xl border border-dashed border-yellow-200">
-                <Server className="opacity-30 mb-2" size={32} />
-                <p className="text-[11px] font-medium text-center px-6">点击齿轮按钮配置您的后端地址和令牌</p>
+                {isAdmin ? (
+                  <>
+                    <Server className="opacity-30 mb-2" size={32} />
+                    <p className="text-[11px] font-medium text-center px-6">点击齿轮按钮配置您的后端地址和令牌</p>
+                  </>
+                ) : (
+                  <>
+                    <Info className="opacity-30 mb-2" size={32} />
+                    <p className="text-[11px] font-medium text-center px-6">点击上方按钮生成智能生产报告</p>
+                  </>
+                )}
               </div>
             )}
           </div>

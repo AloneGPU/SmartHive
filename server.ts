@@ -18,9 +18,7 @@ const PORT = parseInt(process.env.PORT || '3001', 10);
 // Middleware
 // CORS配置：生产环境应该限制允许的源
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173']
-    : true, // 开发环境允许所有源
+  origin: true, // 允许所有来源，避免 CORS 问题
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -55,6 +53,80 @@ const verifyToken = (req: express.Request, res: express.Response, next: express.
   (req as any).token = token;
   next();
 };
+
+const hexToAscii = (hex: string) => {
+  const clean = hex.replace(/[^0-9a-fA-F]/g, '');
+  let result = '';
+  for (let i = 0; i + 1 < clean.length; i += 2) {
+    const code = parseInt(clean.slice(i, i + 2), 16);
+    if (!Number.isNaN(code)) {
+      result += String.fromCharCode(code);
+    }
+  }
+  return result;
+};
+
+const parseNmeaCoord = (raw: string, hemi: string, isLat: boolean) => {
+  if (!raw || !hemi) return null;
+  const degLength = isLat ? 2 : 3;
+  const degrees = parseInt(raw.slice(0, degLength), 10);
+  const minutes = parseFloat(raw.slice(degLength));
+  if (!Number.isFinite(degrees) || !Number.isFinite(minutes)) return null;
+  let value = degrees + minutes / 60;
+  if (hemi === 'S' || hemi === 'W') value = -value;
+  return value;
+};
+
+const extractNmeaSentences = (text: string) => {
+  const results: string[] = [];
+  const parts = text.split('$').slice(1);
+  for (const part of parts) {
+    const line = part.split(/\r?\n/)[0];
+    if (line) results.push(`$${line}`);
+  }
+  return results;
+};
+
+const parseNmeaFromText = (text: string) => {
+  const sentences = extractNmeaSentences(text);
+  const findSentence = (type: 'RMC' | 'GGA' | 'GLL') => {
+    return sentences.find(s => s.length > 6 && s.slice(3, 6) === type);
+  };
+  const tryParse = (type: 'RMC' | 'GGA' | 'GLL') => {
+    const line = findSentence(type);
+    if (!line) return null;
+    const fields = line.split(',');
+    if (type === 'RMC') {
+      if (fields[2] !== 'A') return null;
+      const lat = parseNmeaCoord(fields[3], fields[4], true);
+      const lon = parseNmeaCoord(fields[5], fields[6], false);
+      if (lat === null || lon === null) return null;
+      return { lat, lon };
+    }
+    if (type === 'GGA') {
+      const fix = parseInt(fields[6], 10);
+      if (!Number.isFinite(fix) || fix <= 0) return null;
+      const lat = parseNmeaCoord(fields[2], fields[3], true);
+      const lon = parseNmeaCoord(fields[4], fields[5], false);
+      if (lat === null || lon === null) return null;
+      return { lat, lon };
+    }
+    if (type === 'GLL') {
+      if (fields[6] !== 'A') return null;
+      const lat = parseNmeaCoord(fields[1], fields[2], true);
+      const lon = parseNmeaCoord(fields[3], fields[4], false);
+      if (lat === null || lon === null) return null;
+      return { lat, lon };
+    }
+    return null;
+  };
+  return tryParse('RMC') || tryParse('GGA') || tryParse('GLL');
+};
+
+const geocodeCache = new Map<string, { data: any; expiresAt: number }>();
+const geocodeCacheTtlMs = 10 * 60 * 1000;
+const geocodeCacheMaxSize = 200;
+const getGeocodeCacheKey = (lat: number, lon: number) => `${lat.toFixed(6)},${lon.toFixed(6)}`;
 
 // Health check endpoint - no token required
 app.get('/api/health', async (req, res) => {
@@ -109,10 +181,75 @@ app.get('/api/beehive/history', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/api/geocode/reverse', verifyToken, async (req, res) => {
+  const lat = parseFloat(req.query.lat as string);
+  const lon = parseFloat(req.query.lon as string);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return res.status(400).json({ message: 'Invalid latitude or longitude' });
+  }
+  const amapKey = process.env.GAODE_API_KEY;
+  if (!amapKey) {
+    return res.status(500).json({ message: 'GAODE_API_KEY is not configured' });
+  }
+  const cacheKey = getGeocodeCacheKey(lat, lon);
+  const cached = geocodeCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return res.status(200).json(cached.data);
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch(`https://restapi.amap.com/v3/geocode/regeo?location=${lon},${lat}&key=${amapKey}&radius=1000&extensions=base&batch=false&roadlevel=0`, { signal: controller.signal });
+    if (!response.ok) {
+      return res.status(502).json({ message: 'Geocode provider error' });
+    }
+    const data = await response.json();
+    if (data?.status !== '1') {
+      return res.status(502).json({ message: data?.info || 'Geocode provider error' });
+    }
+    const addressInfo = data?.regeocode?.addressComponent || {};
+    const province = addressInfo.province || '';
+    const city = Array.isArray(addressInfo.city) ? '' : addressInfo.city || addressInfo.province || '';
+    const district = addressInfo.district || '';
+    const road = addressInfo.township || addressInfo.streetNumber?.street || '';
+    const address = data?.regeocode?.formatted_address || [province, city, district, road].filter(Boolean).join(' ');
+    const payload = {
+      address: address || `蜂箱位置 - ${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+      province,
+      city,
+      district,
+      road,
+      source: 'gaode'
+    };
+    geocodeCache.set(cacheKey, { data: payload, expiresAt: Date.now() + geocodeCacheTtlMs });
+    if (geocodeCache.size > geocodeCacheMaxSize) {
+      const firstKey = geocodeCache.keys().next().value;
+      if (firstKey) geocodeCache.delete(firstKey);
+    }
+    res.status(200).json(payload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(502).json({ message: 'Geocode request failed', error: message });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+});
+
 // Insert new beehive data
 app.post('/api/beehive', verifyToken, async (req, res) => {
   try {
-    const data = req.body as Omit<BeehiveData, 'timestamp'>;
+    const body = req.body as any;
+    const data = body as Omit<BeehiveData, 'timestamp'>;
+    if (typeof data.latitude !== 'number' || typeof data.longitude !== 'number') {
+      const rawText = typeof body.gpsRawText === 'string' ? body.gpsRawText : '';
+      const rawHex = typeof body.gpsRawHex === 'string' ? body.gpsRawHex : '';
+      const decoded = rawHex ? hexToAscii(rawHex) : '';
+      const parsed = parseNmeaFromText(`${rawText}\n${decoded}`);
+      if (parsed) {
+        data.latitude = parsed.lat;
+        data.longitude = parsed.lon;
+      }
+    }
     
     // 基本数据验证
     if (typeof data.temperature !== 'number' || 

@@ -23,25 +23,9 @@
    - 安装时记住 root 密码
    - 确保 MySQL 服务正在运行
 
-### 🎯 启动项目（三种方式）
+### 🎯 启动项目（两种方式）
 
-#### 方式一：一键启动（最简单，推荐新手）
-
-1. **双击运行 `启动项目.bat`**
-   - 自动检查 Node.js
-   - 自动安装依赖（首次运行）
-   - 自动创建 `.env` 配置文件
-
-2. **配置数据库密码**
-   - 如果首次运行，会创建 `.env` 文件
-   - 用记事本打开 `.env` 文件
-   - 修改 `DB_PASSWORD=你的MySQL密码`
-
-3. **访问系统**
-   - 浏览器访问：http://localhost:5173
-   - 后端API：http://localhost:3001
-
-#### 方式二：使用 npm start（同时启动前后端）
+#### 方式一：使用 npm start（同时启动前后端）
 
 ```bash
 # 1. 安装依赖（首次运行）
@@ -53,7 +37,7 @@ npm install
 npm start
 ```
 
-#### 方式三：分别启动（适合调试）
+#### 方式二：分别启动（适合调试）
 
 **启动后端（第一个命令行窗口）：**
 ```bash
@@ -100,17 +84,31 @@ QWEN_API_KEY=你的API密钥
 项目根目录/
 ├── components/          # React 组件
 │   ├── AIAnalysisPanel.tsx
+│   ├── AdminDashboard.tsx
+│   ├── BehaviorInsights.tsx
+│   ├── ConnectionHeader.tsx
+│   ├── DataAnalysisPanel.tsx
+│   ├── DetailedAnalytics.tsx
+│   ├── EventLog.tsx
+│   ├── HistoryCharts.tsx
+│   ├── Login.tsx
+│   ├── ProductivityPanel.tsx
 │   ├── SensorGrid.tsx
-│   └── ...
+│   └── WeatherWidget.tsx
 ├── services/            # 服务层
 │   ├── databaseService.ts  # 数据库服务
 │   ├── dataService.ts      # 数据服务
 │   └── qwenService.ts       # AI 服务（通义千问）
 ├── server.ts           # 后端服务器入口
 ├── App.tsx             # 前端应用入口
+├── index.tsx           # React 应用入口
+├── types.ts            # TypeScript 类型定义
 ├── package.json        # 项目依赖配置
 ├── vite.config.ts      # Vite 构建配置
 ├── tsconfig.json       # TypeScript 配置
+├── tsconfig.server.json # 服务器 TypeScript 配置
+├── ecosystem.config.js # PM2 进程管理配置
+├── env.example         # 环境变量模板
 └── .env                # 环境变量配置（需要自己创建）
 ```
 
@@ -199,27 +197,54 @@ npm run preview
 
 ### 插入测试数据
 
-如果想快速测试系统，可以插入测试数据：
-
-```bash
-# 方式一：使用批处理文件（Windows）
-插入测试数据.bat
-
-# 方式二：使用命令行
-node insertHiveTestData.js
-```
+如果想快速测试系统，需要手动创建测试数据或使用数据库工具插入数据。
 
 ## ☁️ 部署到云服务器
 
-详细的云服务器部署指南，请查看：[部署指南.md](./部署指南.md)
-
 **快速部署步骤：**
 
-1. 在本地构建项目：`npm run build` 和 `npm run build:server`
-2. 上传 `dist/`、`dist-server/server.js`、`.env`、`package.json` 到服务器
-3. 在服务器上安装依赖：`npm install --production`
-4. 使用 PM2 启动：`pm2 start ecosystem.config.js`
-5. 配置 Nginx 反向代理（详见部署指南）
+1. **本地构建项目**：
+   ```bash
+   # 构建前端（输出到 dist/ 目录）
+   npm run build
+   
+   # 构建后端（输出到 dist-server/server.cjs）
+   npm run build:server
+   ```
+
+2. **上传文件**：
+   - 上传 `dist/` 目录
+   - 上传 `dist-server/server.cjs` 文件
+   - 上传 `.env` 文件（需要提前配置好）
+   - 上传 `package.json` 文件
+
+3. **服务器配置**：
+   - 安装 Node.js 20+ 和 PM2
+   - 安装依赖：`npm install --production`
+   - 使用 PM2 启动：`pm2 start ecosystem.config.js`
+
+4. **Nginx 配置**（可选，用于反向代理）：
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+       
+       # 前端静态文件
+       location / {
+           root /path/to/project/dist;
+           index index.html;
+           try_files $uri $uri/ /index.html;
+       }
+       
+       # 后端 API
+       location /api {
+           proxy_pass http://localhost:3001;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       }
+   }
+   ```
 
 ## 🤖 配置通义千问 AI 分析（可选但推荐）
 

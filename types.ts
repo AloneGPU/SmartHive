@@ -7,6 +7,12 @@ export interface LocationData {
   latitude: number;
   longitude: number;
   address?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  road?: string;
+  source?: string;
+  status?: 'resolving' | 'resolved' | 'error';
 }
 
 export interface HiveConfig {
@@ -31,6 +37,11 @@ export interface AIAnalysisResult {
   healthScore: number;
   summary: string;
   recommendations: string[];
+  events: Array<{
+    type: 'info' | 'warning' | 'critical';
+    msg: string;
+    timestamp?: number;
+  }>;
   lastUpdated: number;
 }
 

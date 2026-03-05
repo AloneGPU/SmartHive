@@ -12,6 +12,20 @@ interface Props {
 export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
   // 如果没有历史数据，显示空状态
   const hasData = history && history.length > 0;
+  const formatFullTime = (value: number | string) => new Date(value).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  const formatAxisTime = (value: number | string) => new Date(value).toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   
   // 1. Correlation Data: Temperature vs Bees Out
   const correlationData = useMemo(() => {
@@ -19,6 +33,7 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
     return history.map(h => ({
       temp: h.temp || h.temperature || 0,
       activity: h.beesOut || 0,
+      timestamp: typeof h.timestamp === 'number' ? h.timestamp : Date.now(),
       time: h.time
     })).filter(d => d.temp > 0); // Filter invalid data
   }, [history, hasData]);
@@ -38,7 +53,7 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
       const score = (tempScore * 0.6 + weightScore * 0.4).toFixed(1);
       
       return {
-        time: h.time,
+        timestamp: typeof h.timestamp === 'number' ? h.timestamp : Date.now(),
         score: parseFloat(score),
         temp: temp
       };
@@ -101,7 +116,10 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" dataKey="temp" name="温度" unit="°C" domain={['auto', 'auto']} />
                 <YAxis type="number" dataKey="activity" name="出巢数" unit="只" />
-                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                <Tooltip
+                  cursor={{ strokeDasharray: '3 3' }}
+                  labelFormatter={formatFullTime}
+                />
                 <Scatter name="数据点" data={correlationData} fill="#8884d8" />
               </ScatterChart>
             </ResponsiveContainer>
@@ -121,9 +139,15 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={healthTrendData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="time" hide />
+                <XAxis
+                  dataKey="timestamp"
+                  type="number"
+                  scale="time"
+                  domain={['dataMin', 'dataMax']}
+                  hide
+                />
                 <YAxis domain={[0, 100]} />
-                <Tooltip />
+                <Tooltip labelFormatter={formatFullTime} />
                 <Legend />
                 <Line type="monotone" dataKey="score" name="健康分" stroke="#10b981" strokeWidth={2} dot={false} />
               </LineChart>
@@ -144,12 +168,12 @@ export const DataAnalysisPanel: React.FC<Props> = ({ history }) => {
           </h3>
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={hourlyActivity}>
+              <BarChart data={hourlyActivity} barCategoryGap="15%" barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="hour" tick={{fontSize: 10}} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="avgActivity" name="平均出巢数" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="avgActivity" name="平均出巢数" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={12}>
                   {hourlyActivity.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.avgActivity > 100 ? '#ef4444' : '#3b82f6'} />
                   ))}

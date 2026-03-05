@@ -1,3 +1,4 @@
+
 import { BeehiveData, AIAnalysisResult, CustomAIConfig, HiveConfig, PhysicalAssessmentResult } from "../types";
 
 /**
@@ -38,13 +39,22 @@ ${harvestContext}
 1. 温湿度稳定性是否适合幼虫发育？
 2. 进出蜂比例是否暗示分蜂风险、盗蜂现象或中暑倾向？
 3. 根据重量趋势和距离上次采蜜的时间，结合当前重量与目标重量(${hiveConfig?.targetWeight || 50}kg)，预测最佳采蜜时机。
+4. 生成系统事件日志，识别关键的异常或里程碑事件。
 
 请严格返回如下 JSON 格式（不要包含任何其他文字，只返回JSON）：
 {
   "healthScore": 85,
   "summary": "分析蜂群状态的专业洞察，重点包含对采蜜时间的预测，50字以内",
-  "recommendations": ["建议1", "建议2", "建议3"]
+  "recommendations": ["建议1", "建议2", "建议3"],
+  "events": [
+    { "type": "warning", "msg": "检测到温度过高，可能导致幼虫发育受阻" },
+    { "type": "info", "msg": "重量稳步增长，预计5天后可采蜜" }
+  ]
 }
+注意：
+- events 数组中 type 只能是 'info', 'warning', 'critical'
+- 如果没有特殊事件，events 可以为空数组
+- events 中的内容应基于数据分析，不仅仅是简单的阈值报警
 `;
 
   try {
@@ -122,6 +132,7 @@ ${harvestContext}
       recommendations: Array.isArray(parsed.recommendations) 
         ? parsed.recommendations.slice(0, 3) // 最多3条建议
         : ["请检查蜂箱状态", "关注温湿度变化", "定期检查蜂群健康"],
+      events: Array.isArray(parsed.events) ? parsed.events : [],
       lastUpdated: Date.now()
     };
 
@@ -147,6 +158,9 @@ ${harvestContext}
         "检查通义千问 API Key 是否正确配置",
         "检查网络环境是否正常（需要能访问阿里云服务）",
         "尝试切换到其他Qwen模型（如qwen-plus）"
+      ],
+      events: [
+        { type: "warning", msg: "AI 分析服务连接失败，请检查配置" }
       ],
       lastUpdated: Date.now()
     };
@@ -321,4 +335,3 @@ export const validateConfig = async (apiKey: string, modelName: string): Promise
     return false;
   }
 };
-

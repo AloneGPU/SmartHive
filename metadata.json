@@ -1,7 +1,0 @@
-{
-  "name": "SmartHive Connect",
-  "description": "Intelligent beehive monitoring dashboard with AI analysis, Bluetooth/4G switching, and real-time sensor visualization.",
-  "requestFramePermissions": [
-    "geolocation"
-  ]
-}

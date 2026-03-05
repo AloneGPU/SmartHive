@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ConnectionHeader } from './components/ConnectionHeader';
 import { SensorGrid } from './components/SensorGrid';
 import { AIAnalysisPanel } from './components/AIAnalysisPanel';
@@ -10,21 +10,38 @@ import { HistoryCharts } from './components/HistoryCharts';
 import { DataAnalysisPanel } from './components/DataAnalysisPanel';
 import { EventLog } from './components/EventLog';
 import { WeatherWidget } from './components/WeatherWidget';
-import { fetchLiveHiveData, fetchHistoryData } from './services/dataService';
+import { Login } from './components/Login';
+import { AdminDashboard } from './components/AdminDashboard';
+import { fetchLiveHiveData, fetchHistoryData, reverseGeocode } from './services/dataService';
 import { analyzeHiveHealth } from './services/qwenService';
 import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig, HiveConfig } from './types';
 import { Database, ShieldCheck, Zap, Globe, Cpu, Server, RefreshCw, LayoutDashboard, BarChart2, CheckCircle, Smartphone } from 'lucide-react';
 
 function App() {
+  // Auth State
+  const [auth, setAuth] = useState<{ isAuthenticated: boolean; role: 'user' | 'admin' }>({
+    isAuthenticated: false,
+    role: 'user'
+  });
+  const [currentView, setCurrentView] = useState<'dashboard' | 'admin'>('dashboard');
+
   const [activeTab, setActiveTab] = useState<'monitor' | 'analytics'>('monitor');
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
   const [hiveData, setHiveData] = useState<BeehiveData | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
+  const [refreshIntervalMs, setRefreshIntervalMs] = useState<number>(() => {
+    const saved = localStorage.getItem('SMART_HIVE_REFRESH_INTERVAL');
+    const parsed = saved ? Number(saved) : 15000;
+    return Number.isFinite(parsed) ? parsed : 15000;
+  });
   // 基于 GPS 坐标更新位置信息
   const [location, setLocation] = useState<LocationData>({
     latitude: 30.5728, 
     longitude: 104.0668, 
-    address: '数字化蜂场 - MySQL 集成节点'
+    address: '数字化蜂场 - MySQL 集成节点',
+    status: 'resolved',
+    source: 'manual'
   });
 
   // 蜂箱配置信息
@@ -42,33 +59,110 @@ function App() {
     localStorage.setItem('SMART_HIVE_CONFIG', JSON.stringify(newConfig));
   };
   
-  // 当获取到新的 GPS 数据时，更新位置信息
-  useEffect(() => {
-    if (hiveData?.latitude !== undefined && hiveData?.longitude !== undefined) {
-      // 这里可以添加地理编码 API 调用，将 GPS 坐标转换为实际地址
-      // 由于没有地理编码服务，我们使用坐标来生成一个动态地址
-      const newAddress = `蜂箱位置 - ${hiveData.latitude.toFixed(4)}, ${hiveData.longitude.toFixed(4)}`;
-      setLocation(prev => ({
-        latitude: hiveData.latitude,
-        longitude: hiveData.longitude,
-        address: newAddress
-      }));
-    }
-  }, [hiveData?.latitude, hiveData?.longitude]);
-  
   const [aiConfig, setAiConfig] = useState<CustomAIConfig>(() => {
     const saved = localStorage.getItem('SMART_HIVE_AI_CONFIG');
-    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'qwen-turbo', apiBaseUrl: 'http://localhost:3001', apiToken: '123456789', isActive: true };
+    return saved ? JSON.parse(saved) : { apiKey: '', modelName: 'qwen-turbo', apiBaseUrl: 'http://121.40.201.11', apiToken: '2006520', isActive: true };
   });
+
+  // Check Auth on Mount
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('SMART_HIVE_AUTH');
+    if (savedAuth) {
+      try {
+        const parsed = JSON.parse(savedAuth);
+        // Optional: Check expiration
+        setAuth(parsed);
+      } catch (e) {
+        localStorage.removeItem('SMART_HIVE_AUTH');
+      }
+    }
+  }, []);
+
+  const handleLogin = (role: 'user' | 'admin') => {
+    const newAuth = { isAuthenticated: true, role };
+    setAuth(newAuth);
+    localStorage.setItem('SMART_HIVE_AUTH', JSON.stringify(newAuth));
+    if (role === 'admin') {
+      setCurrentView('admin'); // Admin lands on admin dashboard
+    } else {
+      setCurrentView('dashboard');
+    }
+  };
+
+  const handleLogout = () => {
+    setAuth({ isAuthenticated: false, role: 'user' });
+    localStorage.removeItem('SMART_HIVE_AUTH');
+    setCurrentView('dashboard');
+    handleDisconnect(); // Disconnect on logout
+  };
+
+  const resolveLocation = async (latitude: number, longitude: number) => {
+    setLocation(prev => ({
+      ...prev,
+      latitude,
+      longitude,
+      status: 'resolving',
+      source: 'backend'
+    }));
+    const data = await reverseGeocode(aiConfig.apiBaseUrl, aiConfig.apiToken, latitude, longitude);
+    if (!data) {
+      setLocation(prev => ({
+        ...prev,
+        latitude,
+        longitude,
+        address: prev.address || `蜂箱位置 - ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+        status: 'error'
+      }));
+      return;
+    }
+    setLocation({
+      latitude,
+      longitude,
+      address: data.address || `蜂箱位置 - ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+      province: data.province,
+      city: data.city,
+      district: data.district,
+      road: data.road,
+      source: data.source || 'backend',
+      status: 'resolved'
+    });
+  };
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+        resolveLocation(location.latitude, location.longitude);
+    }
+  }, [aiConfig.apiBaseUrl, aiConfig.apiToken, auth.isAuthenticated]);
+
+  useEffect(() => {
+    if (hiveData?.latitude !== undefined && hiveData?.longitude !== undefined) {
+      resolveLocation(hiveData.latitude, hiveData.longitude);
+    }
+  }, [hiveData?.latitude, hiveData?.longitude, aiConfig.apiBaseUrl, aiConfig.apiToken]);
 
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [connectStep, setConnectStep] = useState(0);
-  const steps = ["解析后端 API 地址", "注入鉴权令牌 (Token)", "同步 MySQL 时序库", "挂载 Qwen 分析引擎"];
 
   const handleUpdateConfig = (newConfig: CustomAIConfig) => {
     setAiConfig(newConfig);
     localStorage.setItem('SMART_HIVE_AI_CONFIG', JSON.stringify(newConfig));
+  };
+  const handleRefreshIntervalChange = (value: number) => {
+    setRefreshIntervalMs(value);
+    localStorage.setItem('SMART_HIVE_REFRESH_INTERVAL', String(value));
+  };
+  const normalizeTimestamp = (value?: number | null) => {
+    if (typeof value !== 'number') {
+      return Date.now();
+    }
+    return value < 1_000_000_000_000 ? value * 1000 : value;
+  };
+  const normalizeHiveData = (data: BeehiveData | null) => {
+    if (!data) return null;
+    return {
+      ...data,
+      timestamp: normalizeTimestamp(data.timestamp)
+    };
   };
 
   const handleSync = async () => {
@@ -78,9 +172,10 @@ function App() {
       // Skip the animation steps for faster connection
       const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
       const history = await fetchHistoryData(aiConfig.apiBaseUrl, aiConfig.apiToken);
-      
-      setHiveData(data);
+
+      setHiveData(normalizeHiveData(data) ?? (history.length ? history[history.length - 1] : null));
       setHistoryData(history);
+      setLastUpdatedAt(Date.now());
       // 无论是否有数据，只要连接成功就保持连接状态
       setConnectionStatus('connected');
     } catch (error) {
@@ -92,34 +187,36 @@ function App() {
   const handleDisconnect = () => {
     setConnectionStatus('disconnected');
     setHiveData(null);
+    setLastUpdatedAt(null);
   };
 
   // Auto-connect when config is active
   useEffect(() => {
-    if (aiConfig.isActive && connectionStatus === 'disconnected') {
+    if (auth.isAuthenticated && aiConfig.isActive && connectionStatus === 'disconnected') {
       handleSync();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aiConfig.isActive]);
+  }, [aiConfig.isActive, auth.isAuthenticated]);
 
   useEffect(() => {
     if (connectionStatus !== 'connected') return;
-    
+    if (refreshIntervalMs <= 0) return;
     const intervalId = setInterval(async () => {
       try {
         // 同时刷新最新数据和历史数据
         const data = await fetchLiveHiveData(aiConfig.apiBaseUrl, aiConfig.apiToken);
         const history = await fetchHistoryData(aiConfig.apiBaseUrl, aiConfig.apiToken);
-        setHiveData(data);
+        setHiveData(normalizeHiveData(data) ?? (history.length ? history[history.length - 1] : null));
         setHistoryData(history);
+        setLastUpdatedAt(Date.now());
       } catch (error) {
         console.error('Auto-refresh failed:', error);
         // 不改变连接状态，只是静默失败，下次再试
       }
-    }, 15000); 
+    }, refreshIntervalMs); 
     
     return () => clearInterval(intervalId);
-  }, [connectionStatus, aiConfig.apiBaseUrl, aiConfig.apiToken]);
+  }, [connectionStatus, aiConfig.apiBaseUrl, aiConfig.apiToken, refreshIntervalMs]);
 
   const handleAnalyze = async () => {
     if (!hiveData) return;
@@ -135,6 +232,23 @@ function App() {
     }
   };
 
+  // Render Logic
+  if (!auth.isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  if (auth.role === 'admin' && currentView === 'admin') {
+    return (
+      <AdminDashboard 
+        config={aiConfig}
+        onUpdateConfig={handleUpdateConfig}
+        onLogout={handleLogout}
+        connectionStatus={connectionStatus}
+        lastUpdatedAt={lastUpdatedAt}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-16 font-sans">
       {/* Always show connection header for easy access to settings */}
@@ -142,6 +256,12 @@ function App() {
         status={connectionStatus}
         onSync={handleSync}
         onDisconnect={handleDisconnect}
+        lastUpdatedAt={hiveData?.timestamp}
+        refreshIntervalMs={refreshIntervalMs}
+        onRefreshIntervalChange={handleRefreshIntervalChange}
+        isAdmin={auth.role === 'admin'}
+        onOpenAdmin={() => setCurrentView('admin')}
+        onLogout={handleLogout}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
@@ -149,29 +269,31 @@ function App() {
           <div className="animate-in fade-in slide-in-from-top-4 duration-700 space-y-8">
             {hiveData ? (
               <>
-                <div className="flex space-x-4 border-b border-gray-200 pb-2 mb-6">
-                  <button
-                    onClick={() => setActiveTab('monitor')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      activeTab === 'monitor'
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    实时监控
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('analytics')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      activeTab === 'analytics'
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <BarChart2 className="w-4 h-4" />
-                    深度分析
-                  </button>
+                <div className="flex border-b border-gray-200 pb-2 mb-6">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setActiveTab('monitor')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        activeTab === 'monitor'
+                          ? 'bg-indigo-50 text-indigo-700'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      实时监控
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('analytics')}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        activeTab === 'analytics'
+                          ? 'bg-indigo-50 text-indigo-700'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <BarChart2 className="w-4 h-4" />
+                      深度分析
+                    </button>
+                  </div>
                 </div>
 
                 {activeTab === 'monitor' ? (
@@ -179,7 +301,7 @@ function App() {
                     {/* Top Stats */}
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                       <div className="xl:col-span-3">
-                        <SensorGrid data={hiveData} location={location} />
+                        <SensorGrid data={hiveData} location={location} lastUpdatedAt={hiveData.timestamp} />
                       </div>
                       <div className="xl:col-span-1">
                          {/* Replace SQL Status with Weather Widget */}
@@ -188,7 +310,7 @@ function App() {
                     </div>
 
                     {/* Main Trend Chart */}
-                    <HistoryCharts data={historyData} />
+                    <HistoryCharts data={historyData} totalCount={historyData.length} />
 
                     {/* AI & Event Log */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -201,10 +323,11 @@ function App() {
                             config={aiConfig}
                             onUpdateConfig={handleUpdateConfig}
                             hiveConfig={hiveConfig}
+                            isAdmin={auth.role === 'admin'}
                          />
                       </div>
                       <div className="lg:col-span-1">
-                         <EventLog />
+                         <EventLog data={hiveData} history={historyData} lastUpdatedAt={lastUpdatedAt} aiAnalysis={aiAnalysis} />
                       </div>
                     </div>
                   </div>
@@ -248,13 +371,15 @@ function App() {
                         </li>
                     </ul>
                 </div>
-                <button 
-                  onClick={handleSync}
-                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-8 py-3 rounded-xl shadow-lg active:scale-95 transition-all font-bold flex items-center gap-2"
-                >
-                  <RefreshCw size={18} />
-                  刷新并尝试重连
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button 
+                    onClick={handleSync}
+                    className="bg-indigo-600 text-white hover:bg-indigo-700 px-8 py-3 rounded-xl shadow-lg active:scale-95 transition-all font-bold flex items-center gap-2"
+                  >
+                    <RefreshCw size={18} />
+                    刷新并尝试重连
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -304,11 +429,6 @@ function App() {
                     )}
                   </button>
                   
-                  {!connectionStatus && (
-                      <button className="w-full py-3.5 font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors">
-                        查看演示模式
-                      </button>
-                  )}
               </div>
               
               <div className="mt-8 pt-6 border-t border-gray-50 flex justify-center gap-6">

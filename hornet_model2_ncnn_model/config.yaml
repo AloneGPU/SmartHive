@@ -1,0 +1,201 @@
+# ================================================================= #
+# SmartHive Pro Configuration - Optimized for High FPS & Quality
+# Target Hardware: Raspberry Pi 5
+#
+# 密钥建议用环境变量（launch.sh 会自动 source 本目录 .env）：
+#   SMART_HIVE_MQTT_HOST / PORT / USERNAME / PASSWORD / CLIENT_ID
+#   SMART_HIVE_API_TOKEN（同时用于 archive + server_upload）
+#   SMART_HIVE_CLOUD_ENABLED=true + SMART_HIVE_CLOUD_BROKER_URL 等
+# 详见同目录 env.example
+# ================================================================= #
+
+camera:
+  source: 0
+  width: 640            # 640x480 is the sweet spot for Pi 5 NCNN
+  height: 480
+  fps: 30
+  exposure: -1
+  # Use official driver for low latency
+  backend: "picamera2" 
+
+model:
+  # EXACT ABSOLUTE PATH to your verified model directory
+  param_path: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model/model.ncnn.param"
+  bin_path: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model/model.ncnn.bin"
+  
+  # imgsz: 320 from your metadata.yaml (best for inference speed)
+  input_size: [320, 320]
+  
+  # YOLOv8 NCNN default layer names
+  input_name: "images"
+  output_name: "output0"
+  
+  # Detection Thresholds
+  confidence_threshold: 0.3   # Slightly higher for cleaner dashboard
+  nms_threshold: 0.45
+  
+  # YOLOv8 standard normalization
+  mean: [0.0, 0.0, 0.0]
+  std: [255.0, 255.0, 255.0]
+  
+  # CPU Optimization
+  threads: 4                  # Use all 4 cores of Pi 5
+  use_vulkan: false           # CPU + Half-precision is faster on Pi 5
+
+queues:
+  frame_queue_depth: 8
+  result_queue_depth: 128
+
+roi:
+  polygons: []
+
+output:
+  # Local storage for CSV results
+  csv_path: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/pi5_results.csv"
+  websocket_host: "0.0.0.0"
+  websocket_port: 8765
+  websocket_enabled: true
+  websocket_push_timeout_ms: 200
+
+mqtt:
+  enabled: true
+  # 主机、账号、密码请用同目录 .env（launch.sh 会加载），勿提交 .env
+  # SMART_HIVE_MQTT_HOST / PORT / USERNAME / PASSWORD / CLIENT_ID
+  host: "127.0.0.1"
+  port: 1883
+  username: ""
+  password: ""
+  command_topic: "pi5/vision/command"
+  data_topic: "smarthive/pi5/sensors"
+  error_topic: "pi5/vision/error"
+  status_topic: "pi5/vision/status"
+  client_id: "pi5-vision-client"
+  publish_interval_seconds: 2.0
+  publish_qos: 1
+  cache_file: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/mqtt_cache.jsonl"
+  compress_payload: true
+
+server_upload:
+  enabled: true
+  url: "http://127.0.0.1:3001/api/vision/frame"
+  token: ""
+  device_id: "pi5-vision-client"
+  interval_seconds: 0.5
+  jpeg_quality: 80
+  timeout_seconds: 2.0
+  # NOTE: local_db_path/batch_sync_size have been moved to telemetry_sync.
+  # Keeping them here is harmless but no longer used by transfer_process.py.
+  local_db_path: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/telemetry_cache.db"
+  batch_sync_size: 20
+
+telemetry_sync:
+  # Hourly telemetry sampling + offline caching + MQTT catch-up upload
+  enabled: true
+  interval_seconds: 3600
+  align_to_hour: true
+  local_db_path: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/telemetry_hourly_cache.db"
+  max_pending_records: 168         # 24*7 (keep 7 days)
+  max_db_bytes: 67108864           # 64MB
+  prune_keep_days: 30
+
+  # Cloud MQTT (your backend MQTT broker)
+  cloud_enabled: true
+  cloud_broker_url: "mqtt://127.0.0.1:1883"
+  cloud_username: ""
+  cloud_password: ""
+  cloud_topic: ""                  # empty => use mqtt.data_topic (smarthive/pi5/sensors)
+  publish_qos: 1
+  publish_timeout_seconds: 6.0
+  batch_sync_size: 50
+  min_flush_interval_seconds: 1.0
+
+archive:
+  enabled: false
+  beehive_url: "http://127.0.0.1:3001/api/beehive"
+  api_token: ""
+  interval_seconds: 3600
+  align_to_hour: true
+  timeout_seconds: 10.0
+  max_retries: 3
+
+watchdog:
+  stall_seconds: 5
+  restart_backoff_seconds: 1
+
+logging:
+  # Set to DEBUG to see raw detection data in terminal
+  level: "DEBUG" 
+  file_path: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/pi5_vision.log"
+
+visualization:
+  # --- UI PERFORMANCE OPTIMIZATIONS ---
+  enabled: true
+  host: "0.0.0.0"
+  port: 5001
+  stream_fps: 25              # Increased to 25 FPS for smooth video
+  stream_jpeg_quality: 85     # Increased to 85 for high-quality images
+
+sensor:
+  # Hardware Pins based on your cheshi.py
+  hx711_enabled: true
+  hx711_dout_pin: 5
+  hx711_sck_pin: 6
+  hx711_reference_unit: 1.0
+  hx711_tare_on_start: true
+  hx711_read_interval: 0.5
+  hx711_filter_window: 5
+  
+  # DHT22：蜂箱内部温湿度（使用树莓派 GPIO）
+  dht_inside_gpio_pin: 4
+  dht_read_interval: 5.0
+  # DHT22：蜂箱外部温湿度（可选；如未接线可关）
+  dht_outside_gpio_pin: 17
+  dht_outside_enabled: true
+  
+  gps_port: "/dev/serial0"
+  gps_baud: 9600
+  
+  ir_enabled: true
+  ir_outer_pin: 23
+  ir_inner_pin: 24
+  ir_active_low: true
+  ir_debounce_ms: 30
+  ir_direction_window_ms: 500
+
+  # 加湿器模块配置（低电平触发，识别到胡蜂时启动5V输出）
+  humidifier_enabled: true
+  humidifier_gpio_pin: 25
+  humidifier_active_low: true
+  humidifier_trigger_duration_ms: 30000
+
+  # OLED显示屏配置（SSD1306驱动，0.96寸，4针I2C接口）
+  oled_enabled: true
+  oled_i2c_address: "0x3C"
+  oled_width: 128
+  oled_height: 64
+  oled_refresh_interval: 1.0
+
+servo:
+  enabled: true
+  gpio_pin: 18
+  pwm_frequency: 50
+  pulse_min_us: 500
+  pulse_max_us: 2500
+  angle_min: 10.0
+  angle_max: 170.0
+  angle_center: 90.0
+  scan_speed_dps: 25.0
+  lock_lost_seconds: 2.0
+  track_deadzone_px: 40
+  track_gain: 0.05
+  mqtt_command_topic: "pi5/servo/command"
+
+uds_path: "/tmp/pi5_vision.sock"
+
+# 调试：true 或环境变量 SMART_HIVE_DIAGNOSTICS=1，亦可各进程加参数 --diagnostics
+diagnostics:
+  enabled: false
+  summary_interval_seconds: 15.0
+  log_mqtt_payload_out: false
+  log_mqtt_in: true
+  log_vision_fps: true

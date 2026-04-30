@@ -1,170 +1,378 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Cloud,
+  CloudRain,
+  Sun,
+  Wind,
+  Thermometer,
+  Droplets,
+  MapPin,
+  Calendar,
+  RefreshCw,
+  CloudSnow,
+  CloudFog,
+  Sun as SunIcon
+} from 'lucide-react';
 
-import React, { useState, useEffect } from 'react';
-import { CloudRain, Sun, Cloud, Wind, CloudLightning, CloudSnow, RefreshCw } from 'lucide-react';
-import { fetchWeatherData } from '../services/dataService';
-
-interface WeatherProps {
-  location: { latitude: number; longitude: number };
+export interface WeatherData {
+  current: {
+    temperature_2m: number;
+    relative_humidity_2m: number;
+    apparent_temperature: number;
+    weather_code: number;
+    wind_speed_10m: number;
+    wind_direction_10m: number;
+    uv_index: number;
+    precipitation: number;
+    pressure_msl: number;
+  };
+  daily: {
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    weather_code: number[];
+    precipitation_probability_max: number[];
+    sunrise: string[];
+    sunset: string[];
+  };
+  timezone: string;
+  latitude: number;
+  longitude: number;
 }
 
-interface WeatherState {
-  temp: number;
-  condition: string;
-  humidity: number;
-  windSpeed: number;
-  feelsLike: number;
-  forecast: string;
-  loading: boolean;
+interface WeatherWidgetProps {
+  latitude: number;
+  longitude: number;
+  locationName?: string;
 }
 
-export const WeatherWidget: React.FC<WeatherProps> = ({ location }) => {
-  const [weather, setWeather] = useState<WeatherState>({
-    temp: 0,
-    condition: 'Sunny',
-    humidity: 0,
-    windSpeed: 0,
-    feelsLike: 0,
-    forecast: '正在更新...',
-    loading: true
-  });
+export const WeatherWidget: React.FC<WeatherWidgetProps> = ({
+  latitude,
+  longitude,
+  locationName
+}) => {
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // WMO Weather interpretation codes (http://www.wmo.int/pages/prog/www/IMOP/publications/CIMO-Guide/Prof_Guide/CIMO_Guide-2008_Part-I_Chapter-13.pdf)
-  // 0: Clear sky
-  // 1, 2, 3: Mainly clear, partly cloudy, and overcast
-  // 45, 48: Fog and depositing rime fog
-  // 51, 53, 55: Drizzle: Light, moderate, and dense intensity
-  // 56, 57: Freezing Drizzle: Light and dense intensity
-  // 61, 63, 65: Rain: Slight, moderate and heavy intensity
-  // 66, 67: Freezing Rain: Light and heavy intensity
-  // 71, 73, 75: Snow fall: Slight, moderate, and heavy intensity
-  // 77: Snow grains
-  // 80, 81, 82: Rain showers: Slight, moderate, and violent
-  // 85, 86: Snow showers slight and heavy
-  // 95: Thunderstorm: Slight or moderate
-  // 96, 99: Thunderstorm with slight and heavy hail
-
-  const mapWmoCodeToCondition = (code: number): string => {
-    if (code === 0) return 'Sunny';
-    if (code >= 1 && code <= 3) return 'Cloudy';
-    if (code >= 45 && code <= 48) return 'Cloudy'; // Fog as cloudy
-    if (code >= 51 && code <= 67) return 'Rain';
-    if (code >= 71 && code <= 77) return 'Snow';
-    if (code >= 80 && code <= 82) return 'Rain';
-    if (code >= 85 && code <= 86) return 'Snow';
-    if (code >= 95 && code <= 99) return 'Thunder';
-    return 'Sunny';
+  // 默认中国城市坐标（如果用户没有提供坐标）
+  const defaultCoords = {
+    beijing: { lat: 39.9042, lng: 116.4074 },
+    shanghai: { lat: 31.2304, lng: 121.4737 },
+    guangzhou: { lat: 23.1291, lng: 113.2644 },
+    shenzhen: { lat: 22.5431, lng: 114.0579 }
   };
 
-  const getConditionLabel = (condition: string): string => {
-      switch(condition) {
-          case 'Sunny': return '晴朗';
-          case 'Cloudy': return '多云';
-          case 'Rain': return '有雨';
-          case 'Snow': return '有雪';
-          case 'Thunder': return '雷雨';
-          default: return '未知';
+  const fetchWeather = useCallback(async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      // 使用 Open-Meteo API 获取天气数据
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,uv_index,precipitation,pressure_msl&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-  };
 
-  const getAdvice = (temp: number, wind: number, condition: string): string => {
-      if (condition === 'Rain' || condition === 'Thunder') return '不宜开箱';
-      if (wind > 8) return '风大不宜开箱';
-      if (temp < 12) return '气温低不宜开箱';
-      if (temp > 35) return '高温注意防暑';
-      return '适宜开箱检查';
-  };
+      const data = await response.json();
+      setWeatherData(data);
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('获取天气数据失败:', error);
+      setError(error instanceof Error ? error.message : '获取天气数据失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [latitude, longitude]);
 
   useEffect(() => {
-    const updateWeather = async () => {
-        if (!location.latitude || !location.longitude) return;
-        
-        try {
-            const data = await fetchWeatherData(location.latitude, location.longitude);
-            if (data && data.current) {
-                const current = data.current;
-                const condition = mapWmoCodeToCondition(current.weather_code);
-                
-                setWeather({
-                    temp: Math.round(current.temperature_2m),
-                    condition: condition,
-                    humidity: current.relative_humidity_2m,
-                    windSpeed: current.wind_speed_10m,
-                    feelsLike: Math.round(current.apparent_temperature),
-                    forecast: getAdvice(current.temperature_2m, current.wind_speed_10m, condition),
-                    loading: false
-                });
-            }
-        } catch (error) {
-            console.error('Failed to update weather widget', error);
-            // Fallback to mock/default or keep loading state? 
-            // Let's keep loading false but maybe show stale data
-            setWeather(prev => ({ ...prev, loading: false }));
-        }
-    };
+    if (latitude && longitude) {
+      fetchWeather();
+    }
+  }, [fetchWeather]);
 
-    updateWeather();
-    // Refresh every 30 mins
-    const interval = setInterval(updateWeather, 30 * 60 * 1000);
+  // 自动刷新（每30分钟）
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (weatherData && !loading) {
+        fetchWeather();
+      }
+    }, 30 * 60 * 1000); // 30分钟
+
     return () => clearInterval(interval);
-  }, [location.latitude, location.longitude]);
+  }, [fetchWeather, loading, weatherData]);
 
-  const getWeatherIcon = (condition: string) => {
-    switch (condition) {
-      case 'Rain': return <CloudRain className="w-8 h-8 text-blue-300" />;
-      case 'Cloudy': return <Cloud className="w-8 h-8 text-gray-200" />;
-      case 'Sunny': return <Sun className="w-8 h-8 text-amber-300 animate-spin-slow" />;
-      case 'Snow': return <CloudSnow className="w-8 h-8 text-white" />;
-      case 'Thunder': return <CloudLightning className="w-8 h-8 text-purple-300" />;
-      default: return <Sun className="w-8 h-8 text-amber-300" />;
+  const getWeatherIcon = (weatherCode: number, size: number = 32) => {
+    const iconProps = { className: `w-${size/8} h-${size/8} text-current` };
+
+    switch (weatherCode) {
+      case 0: // Clear sky
+        return <Sun className="w-8 h-8 text-yellow-500" />;
+      case 1: // Mainly clear
+        return <Sun className="w-8 h-8 text-yellow-400" />;
+      case 2: // Partly cloudy
+        return <Cloud className="w-8 h-8 text-gray-400" />;
+      case 3: // Overcast
+        return <Cloud className="w-8 h-8 text-gray-600" />;
+      case 45: case 48: // Fog
+        return <CloudFog className="w-8 h-8 text-gray-400" />;
+      case 51: case 53: case 55: // Drizzle
+        return <CloudRain className="w-8 h-8 text-blue-400" />;
+      case 56: case 57: // Freezing drizzle
+        return <CloudSnow className="w-8 h-8 text-blue-200" />;
+      case 61: case 63: case 65: // Rain
+        return <CloudRain className="w-8 h-8 text-blue-500" />;
+      case 66: case 67: // Freezing rain
+        return <CloudSnow className="w-8 h-8 text-blue-300" />;
+      case 71: case 73: case 75: // Snow fall
+        return <CloudSnow className="w-8 h-8 text-blue-100" />;
+      case 77: // Snow grains
+        return <CloudSnow className="w-8 h-8 text-gray-200" />;
+      case 80: case 81: case 82: // Rain showers
+        return <CloudRain className="w-8 h-8 text-blue-600" />;
+      case 85: case 86: // Snow showers
+        return <CloudSnow className="w-8 h-8 text-blue-200" />;
+      case 95: case 96: case 99: // Thunderstorm
+        return <Cloud className="w-8 h-8 text-purple-500" />;
+      default:
+        return <Cloud className="w-8 h-8 text-gray-400" />;
     }
   };
 
-  if (weather.loading) {
-      return (
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg h-full flex items-center justify-center">
-            <RefreshCw className="animate-spin opacity-50" />
-        </div>
-      );
-  }
+  const getWeatherDescription = (weatherCode: number) => {
+    const descriptions: { [key: number]: string } = {
+      0: '晴朗',
+      1: '基本晴朗',
+      2: '部分多云',
+      3: '阴天',
+      45: '有雾',
+      48: '浓雾',
+      51: '毛毛雨',
+      53: '小雨',
+      55: '中雨',
+      56: '冻毛毛雨',
+      57: '冻雨',
+      61: '雨',
+      63: '中雨',
+      65: '大雨',
+      66: '冻雨',
+      67: '大雨',
+      71: '雪',
+      73: '中雪',
+      75: '大雪',
+      77: '冰粒',
+      80: '阵雨',
+      81: '中阵雨',
+      82: '大阵雨',
+      85: '阵雪',
+      86: '大雪',
+      95: '雷暴',
+      96: '强雷暴',
+      99: '强雷暴'
+    };
+    return descriptions[weatherCode] || '未知';
+  };
 
-  return (
-    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg overflow-hidden relative h-full flex flex-col justify-between">
-      {/* Decorative background circles */}
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-      
-      <div className="relative z-10 flex justify-between items-start">
-        <div>
-          <h3 className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">当前天气</h3>
-          <div className="flex items-center gap-3">
-            <span className="text-4xl font-black">{weather.temp}°</span>
-            <div className="flex flex-col">
-               <span className="text-sm font-medium">{getConditionLabel(weather.condition)}</span>
-               <span className="text-xs text-blue-100 opacity-80">体感 {weather.feelsLike}°</span>
+  const getWindDirection = (degrees: number) => {
+    const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
+    const index = Math.round(degrees / 45) % 8;
+    return directions[index];
+  };
+
+  const getUVLevel = (uvIndex: number) => {
+    if (uvIndex <= 2) return { level: '低', color: 'text-green-600' };
+    if (uvIndex <= 5) return { level: '中等', color: 'text-yellow-600' };
+    if (uvIndex <= 7) return { level: '高', color: 'text-orange-600' };
+    if (uvIndex <= 10) return { level: '很高', color: 'text-red-600' };
+    return { level: '极高', color: 'text-purple-600' };
+  };
+
+  const formatTime = (timeStr: string) => {
+    return timeStr.slice(11, 16); // 提取 HH:MM
+  };
+
+  const formatDateTime = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleString('zh-CN', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="animate-pulse">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+              <div className="w-24 h-6 bg-gray-200 rounded"></div>
+            </div>
+            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+          </div>
+          <div className="space-y-3">
+            <div className="w-32 h-8 bg-gray-200 rounded"></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-12 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-gray-200 rounded"></div>
             </div>
           </div>
         </div>
-        <div>
-          {getWeatherIcon(weather.condition)}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="text-center">
+          <Cloud className="w-12 h-12 mx-auto mb-3 text-red-300" />
+          <p className="text-red-600 mb-2">获取天气数据失败</p>
+          <p className="text-sm text-gray-500 mb-4">{error}</p>
+          <button
+            onClick={fetchWeather}
+            className="inline-flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <RefreshCw className="w-4 h-4 mr-1" />
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!weatherData) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="text-center text-gray-500">
+          <Cloud className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p>无法获取天气数据</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { current, daily, timezone } = weatherData;
+  const uvInfo = getUVLevel(current.uv_index);
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      {/* 头部 */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          {getWeatherIcon(current.weather_code)}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">天气信息</h2>
+            <div className="flex items-center text-sm text-gray-500">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span>{locationName || `纬度 ${latitude.toFixed(2)}, 经度 ${longitude.toFixed(2)}`}</span>
+            </div>
+          </div>
+        </div>
+        <div className="text-right text-xs text-gray-400">
+          {formatDateTime(lastUpdated)}
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 relative z-10">
-        <div className="bg-white/10 rounded-lg p-2 flex items-center gap-2">
-           <Wind size={14} className="text-blue-200" />
-           <span className="text-xs font-medium">{weather.windSpeed} m/s</span>
+      {/* 当前天气 */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 温度信息 */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-1">
+                <Thermometer className="w-4 h-4 text-orange-500" />
+                <span className="text-sm font-medium text-gray-700">当前温度</span>
+              </div>
+              <span className="text-3xl font-bold text-gray-900">
+                {current.temperature_2m.toFixed(1)}°C
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              体感温度: {current.apparent_temperature.toFixed(1)}°C
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              最高: {daily.temperature_2m_max[0]?.toFixed(1)}°C
+              最低: {daily.temperature_2m_min[0]?.toFixed(1)}°C
+            </div>
+          </div>
+
+          {/* 天气状况 */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">天气状况</span>
+              {getWeatherIcon(current.weather_code)}
+            </div>
+            <div className="text-lg font-semibold text-gray-900">
+              {getWeatherDescription(current.weather_code)}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              风速: {current.wind_speed_10m.toFixed(1)} km/h {getWindDirection(current.wind_direction_10m)}
+            </div>
+          </div>
         </div>
-        <div className="bg-white/10 rounded-lg p-2 flex items-center gap-2">
-           <CloudRain size={14} className="text-blue-200" />
-           <span className="text-xs font-medium">{weather.humidity}%</span>
+
+        {/* 详细信息 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="flex items-center space-x-2">
+            <Droplets className="w-4 h-4 text-blue-500" />
+            <div>
+              <div className="text-sm font-medium text-gray-700">湿度</div>
+              <div className="text-lg font-semibold text-gray-900">
+                {current.relative_humidity_2m.toFixed(0)}%
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Wind className="w-4 h-4 text-gray-500" />
+            <div>
+              <div className="text-sm font-medium text-gray-700">气压</div>
+              <div className="text-lg font-semibold text-gray-900">
+                {current.pressure_msl.toFixed(0)} hPa
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <SunIcon className="w-4 h-4 text-yellow-500" />
+            <div>
+              <div className="text-sm font-medium text-gray-700">紫外线</div>
+              <div className={`text-lg font-semibold ${uvInfo.color}`}>
+                {uvInfo.level} ({current.uv_index.toFixed(1)})
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <CloudRain className="w-4 h-4 text-blue-400" />
+            <div>
+              <div className="text-sm font-medium text-gray-700">降水</div>
+              <div className="text-lg font-semibold text-gray-900">
+                {current.precipitation.toFixed(1)} mm
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <div className="mt-4 pt-4 border-t border-white/10 relative z-10">
-         <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${weather.forecast.includes('不宜') ? 'bg-red-400' : 'bg-green-400'}`}></div>
-            <span className="text-xs font-bold text-white/90">{weather.forecast}</span>
-         </div>
+
+        {/* 数据来源和刷新按钮 */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="text-xs text-gray-500">
+            数据来源: Open-Meteo API | 时区: {timezone}
+          </div>
+          <button
+            onClick={fetchWeather}
+            className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4 mr-1" />
+            刷新
+          </button>
+        </div>
       </div>
     </div>
   );

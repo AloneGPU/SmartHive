@@ -1,0 +1,1415 @@
+2026-03-23 17:48:04,768 INFO vision MainThread InferenceEngine: Loading via Ultralytics from /home/first/Desktop/yolov8/hornet_model2_ncnn_model
+2026-03-23 17:48:04,770 INFO vision MainThread === Vision Engine Started ===
+2026-03-23 17:48:04,778 INFO vision MainThread === Vision Engine Stopped ===
+2026-03-23 18:02:02,397 INFO vision MainThread InferenceEngine: Loading via Ultralytics from /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model
+2026-03-23 18:02:02,399 INFO vision MainThread === Vision Engine Started ===
+2026-03-23 18:02:02,401 INFO vision MainThread === Vision Engine Stopped ===
+2026-03-23 18:03:08,819 INFO vision MainThread InferenceEngine: Loading via Ultralytics from /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model
+2026-03-23 18:03:08,821 INFO vision MainThread === Vision Engine Started ===
+2026-03-23 18:03:08,822 INFO vision MainThread === Vision Engine Stopped ===
+2026-03-23 18:14:57,699 INFO sensor MainThread SensorReader started
+2026-03-23 18:14:57,700 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:14:57,703 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:14:57,703 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 2702 seconds
+2026-03-23 18:14:57,703 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:14:57,705 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:14:57,705 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:14:57,705 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:14:57,706 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:14:57,711 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address
+2026-03-23 18:15:00,661 ERROR transfer MainThread MqttBridge: 连接失败: [Errno 111] Connection refused
+2026-03-23 18:15:00,661 INFO transfer MainThread IotIngestUploader: → http://127.0.0.1:3001/api/iot/ingest
+2026-03-23 18:15:00,662 INFO transfer MainThread === TransferProcess started ===
+2026-03-23 18:15:01,599 INFO vision MainThread CameraCapture: Official Camera started successfully.
+2026-03-23 18:15:01,599 INFO vision MainThread InferenceEngine: Loading model from directory: /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model
+2026-03-23 18:15:01,601 INFO vision MainThread InferenceEngine: YOLO NCNN model loaded successfully.
+2026-03-23 18:15:01,601 INFO vision MainThread === Starting Vision Main Loop ===
+2026-03-23 18:15:02,665 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:04,670 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:06,671 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:08,677 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:10,678 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:12,679 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:14,680 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:16,680 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:18,683 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:20,684 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:22,688 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:24,689 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:26,690 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:28,694 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:30,696 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:32,698 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:34,699 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:36,705 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:38,706 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:40,707 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:42,708 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:44,709 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:46,711 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:48,716 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:50,717 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:52,718 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:54,719 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:56,725 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:15:58,728 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:00,730 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:02,731 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:04,737 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:06,741 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:08,741 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:10,742 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:12,744 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:14,746 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:16,747 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:18,751 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:20,752 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:22,754 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:24,755 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:26,760 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:28,763 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:30,764 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:32,765 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:34,769 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:36,770 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:38,777 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:40,777 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:42,778 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:44,779 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:46,781 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:48,782 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:50,783 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:52,783 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:54,785 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:56,788 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:16:58,790 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:00,792 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:02,796 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:04,799 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:06,800 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:08,801 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:10,803 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:12,804 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:14,808 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:16,810 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:18,811 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:20,817 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:22,821 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:24,822 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:26,823 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:28,825 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:30,827 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:32,828 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:34,833 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:36,834 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:38,835 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:40,838 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:42,841 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:44,844 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:46,845 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:48,846 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:50,847 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:52,849 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:54,850 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:56,851 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:17:58,857 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:00,858 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:02,859 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:04,861 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:06,865 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:08,866 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:10,867 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:12,869 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:14,871 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:16,877 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:18,880 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:20,881 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:22,882 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:24,883 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:26,886 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:28,887 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:30,891 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:32,896 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:34,905 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:36,906 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:38,907 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:40,908 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:42,913 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:44,917 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:46,918 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:48,919 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:50,920 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:52,925 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:54,926 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:56,928 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:18:58,933 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:00,933 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:02,936 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:04,940 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:06,941 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:08,942 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:10,944 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:12,949 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:14,950 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:16,953 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:18,953 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:20,956 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:22,959 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:24,960 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:26,960 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:28,962 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:30,963 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:32,964 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:34,969 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:36,970 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:38,971 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:40,976 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:42,977 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:44,981 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:46,981 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:48,982 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:50,983 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:52,989 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:54,990 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:56,991 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:19:58,992 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:00,993 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:02,996 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:04,997 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:07,001 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:09,002 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:11,003 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:13,004 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:15,008 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:17,009 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:17,939 INFO sensor MainThread SensorProcess: Received signal 2, stopping...
+2026-03-23 18:20:17,940 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:20:17,950 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:20:17,960 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:20:18,057 INFO vision MainThread === Vision Engine Shutdown Complete ===
+2026-03-23 18:20:19,010 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:20:19,010 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:22:31,394 INFO sensor MainThread SensorReader started
+2026-03-23 18:22:31,394 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:22:31,395 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 2249 seconds
+2026-03-23 18:22:31,395 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:22:31,396 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:22:31,396 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:22:31,397 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:22:31,397 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:22:31,398 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:22:31,399 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address
+2026-03-23 18:22:34,350 ERROR transfer MainThread MqttBridge: 连接失败: [Errno 111] Connection refused
+2026-03-23 18:22:34,351 INFO transfer MainThread IotIngestUploader: → http://127.0.0.1:3001/api/iot/ingest
+2026-03-23 18:22:34,351 INFO transfer MainThread === TransferProcess started ===
+2026-03-23 18:22:36,353 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:38,354 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:40,354 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:42,355 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:44,356 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:46,357 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:46,669 INFO sensor MainThread SensorProcess: Received signal 2, stopping...
+2026-03-23 18:22:46,669 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:22:46,718 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:22:46,718 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:22:48,358 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:22:48,358 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:26:48,695 INFO sensor MainThread SensorReader started
+2026-03-23 18:26:48,696 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:26:48,696 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 1991 seconds
+2026-03-23 18:26:48,697 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:26:48,697 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:26:48,697 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:26:48,699 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:26:48,699 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:26:48,700 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:26:48,701 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address
+2026-03-23 18:26:51,635 ERROR transfer MainThread MqttBridge: 连接失败: [Errno 111] Connection refused
+2026-03-23 18:26:51,635 INFO transfer MainThread IotIngestUploader: → http://127.0.0.1:3001/api/iot/ingest
+2026-03-23 18:26:51,635 INFO transfer MainThread === TransferProcess started ===
+2026-03-23 18:26:53,637 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:26:55,638 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:26:57,638 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:26:59,639 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:01,640 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:03,641 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:05,641 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:07,642 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:09,643 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:11,644 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:13,645 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:15,646 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:17,646 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:19,647 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:21,648 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:23,648 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:25,649 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:27,650 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:29,651 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:31,652 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:33,653 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:35,653 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:37,654 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:39,655 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:41,656 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:43,656 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:45,657 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:47,658 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:49,659 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:51,660 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:53,660 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:55,661 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:57,662 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:27:59,663 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:01,663 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:03,664 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:05,665 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:07,666 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:09,666 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:11,667 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:13,668 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:15,669 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:17,670 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:19,670 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:21,671 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:23,672 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:25,672 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:27,673 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:29,674 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:31,675 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:33,676 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:35,677 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:37,677 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:39,678 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:41,679 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:43,679 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:45,680 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:47,681 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:49,682 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:51,683 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:53,683 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:55,684 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:57,685 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:28:59,685 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:01,686 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:03,687 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:05,688 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:07,689 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:09,689 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:11,690 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:13,691 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:15,691 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:17,692 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:19,693 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:21,694 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:23,694 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:25,695 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:27,696 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:29,697 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:31,697 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:33,698 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:35,699 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:37,699 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:39,700 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:41,701 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:43,702 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:45,702 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:47,703 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:49,704 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:51,705 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:53,706 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:29:55,706 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:24,650 INFO sensor MainThread SensorReader started
+2026-03-23 18:32:24,650 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:32:24,651 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 1655 seconds
+2026-03-23 18:32:24,652 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:32:24,652 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:32:24,653 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:32:24,653 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:32:24,655 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:32:24,655 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:32:24,656 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address
+2026-03-23 18:32:27,611 ERROR transfer MainThread MqttBridge: 连接失败: [Errno 111] Connection refused
+2026-03-23 18:32:27,611 INFO transfer MainThread IotIngestUploader: → http://127.0.0.1:3001/api/iot/ingest
+2026-03-23 18:32:27,611 INFO transfer MainThread === TransferProcess started ===
+2026-03-23 18:32:28,861 INFO vision MainThread Official Camera started.
+2026-03-23 18:32:28,863 INFO vision MainThread Model loaded from /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model
+2026-03-23 18:32:28,863 INFO vision MainThread Web Dashboard started at http://0.0.0.0:5001
+2026-03-23 18:32:28,864 INFO vision MainThread === Vision Main Loop Running ===
+2026-03-23 18:32:29,613 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:31,618 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:33,619 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:35,620 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:37,624 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:39,625 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:41,626 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:43,627 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:45,631 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:47,632 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:49,637 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:51,638 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:53,639 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:55,645 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:57,646 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:59,164 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:32:59,210 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:32:59,257 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:32:59,311 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:32:59,360 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,409 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:32:59,458 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,508 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,599 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,647 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:32:59,648 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,697 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,747 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:32:59,796 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:32:59,996 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:00,110 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,159 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,219 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,267 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,326 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,379 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,428 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,480 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,530 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,596 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,644 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,712 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,759 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,818 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,867 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,926 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:00,982 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,031 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,078 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,126 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,175 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,225 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,274 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,323 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,372 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,423 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,471 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,521 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,571 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,621 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,647 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:01,670 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,718 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,765 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,813 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,861 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,910 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:01,958 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,010 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,060 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,109 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,157 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,206 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,254 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:02,301 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:02,349 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,397 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,445 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,541 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,636 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,686 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,735 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:02,782 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,830 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:02,878 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:02,925 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:02,973 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,025 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,073 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:03,122 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:03,170 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:03,218 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:03,265 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,313 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,360 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,409 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,458 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,505 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,555 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,602 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,649 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:03,650 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,697 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,745 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,792 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:03,840 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,888 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,936 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:03,985 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,038 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,087 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,136 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:04,185 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:04,235 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:04,283 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:04,334 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,383 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,432 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,482 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,530 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,579 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,628 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,677 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,727 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,776 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,826 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:04,970 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,111 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:05,165 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,214 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,264 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:05,315 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:05,363 INFO vision MainThread DETECTED: 3 targets
+2026-03-23 18:33:05,411 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,458 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,506 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,553 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,602 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,651 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:05,652 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,700 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,747 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,795 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,842 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,890 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,939 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:05,991 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,042 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,093 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,141 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,190 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,238 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,286 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,335 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,384 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,432 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,481 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,529 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,579 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,627 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,675 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:06,726 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:06,775 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,822 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:06,871 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:06,920 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:06,969 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:07,018 INFO vision MainThread DETECTED: 3 targets
+2026-03-23 18:33:07,074 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:07,123 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:07,172 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:07,221 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:07,269 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:07,317 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:07,652 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:09,638 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:09,653 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:09,765 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:09,833 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:09,891 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:10,332 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,145 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,259 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,311 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,359 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,410 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,458 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,507 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,555 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,604 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,652 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,653 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:11,703 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,751 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,800 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,848 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,897 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,946 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:11,994 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,042 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,091 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,146 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,196 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,244 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:12,291 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,339 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,386 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,433 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,482 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,625 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,675 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,723 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,771 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,818 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:12,866 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,913 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:12,961 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:13,008 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:13,056 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:13,102 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:13,153 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:13,201 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,248 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,296 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,344 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,392 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,440 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,487 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,534 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,580 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,626 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,655 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:13,673 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,720 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:13,767 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,815 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,861 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,909 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:13,956 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:14,145 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,201 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,248 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,296 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,437 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,485 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,534 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,583 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,631 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,680 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,733 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,781 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,831 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:14,879 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:14,928 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,236 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,286 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,335 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,383 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,432 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,480 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,527 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,577 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,627 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,657 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:15,676 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,725 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,773 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,823 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,870 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,917 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:15,964 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,108 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,155 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,204 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,252 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,302 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:16,349 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,397 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,444 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,492 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,540 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,589 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,636 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,683 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,730 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,778 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,825 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:16,920 INFO vision MainThread DETECTED: 3 targets
+2026-03-23 18:33:17,016 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:17,109 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:17,157 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:17,538 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:17,585 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:17,660 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:18,436 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:19,174 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:19,336 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:19,661 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:19,774 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:19,836 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:19,899 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:19,962 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,174 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,258 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,312 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,359 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,407 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,468 INFO vision MainThread DETECTED: 2 targets
+2026-03-23 18:33:20,530 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,593 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,782 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,845 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,907 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:20,970 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,032 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,093 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,156 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,219 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,277 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,356 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,417 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,465 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,511 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,566 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,623 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,664 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:21,679 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,734 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:21,907 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:22,329 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:22,382 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:22,439 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:22,939 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,002 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,069 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,632 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,665 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:23,706 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,762 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,884 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:23,947 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:24,450 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:24,828 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:24,892 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:24,954 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,270 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,321 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,374 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,421 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,468 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,522 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:25,668 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:26,591 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:26,654 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:26,717 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:26,972 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,032 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,285 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,425 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,474 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,536 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,598 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,661 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:27,669 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:27,724 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:33:29,672 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:31,674 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:33,675 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:35,675 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:37,483 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:33:37,483 INFO sensor MainThread SensorProcess: Received signal 2, stopping...
+2026-03-23 18:33:37,532 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:33:37,532 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:33:37,676 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:33:37,678 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:39:23,701 INFO vision MainThread DETECTED: 1 targets
+2026-03-23 18:39:38,744 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:39:38,748 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:39:43,558 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:39:43,564 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:39:44,420 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:39:44,421 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:39:44,677 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:39:44,677 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:39:44,887 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:39:44,888 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:41:51,560 INFO sensor MainThread SensorReader started
+2026-03-23 18:41:51,561 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:41:51,561 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 1088 seconds
+2026-03-23 18:41:51,561 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:41:51,562 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:41:51,562 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:41:51,562 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:41:51,565 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:41:51,565 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:41:51,566 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address
+2026-03-23 18:41:54,510 ERROR transfer MainThread MqttBridge: 连接失败: [Errno 111] Connection refused
+2026-03-23 18:41:54,510 INFO transfer MainThread IotIngestUploader: → http://127.0.0.1:3001/api/iot/ingest
+2026-03-23 18:41:54,510 INFO transfer MainThread === TransferProcess started ===
+2026-03-23 18:41:55,685 INFO vision MainThread Initializing High-Performance Engine...
+2026-03-23 18:41:55,687 INFO vision MainThread Dashboard started on port 5001
+2026-03-23 18:41:55,687 INFO vision MainThread === Vision Main Loop (Multi-Threaded) Running ===
+2026-03-23 18:41:56,517 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:41:58,523 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:00,524 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:02,529 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:04,530 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:06,531 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:08,532 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:10,537 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:12,537 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:14,540 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:16,541 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:18,542 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:20,545 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:22,547 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:24,549 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:26,550 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:28,551 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:30,553 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:32,554 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:34,555 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:36,556 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:38,557 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:40,561 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:42,562 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:43,340 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,432 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,478 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,525 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,572 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,618 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,664 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,716 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,777 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,825 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,872 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,922 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:43,968 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,017 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,066 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,114 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,160 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,208 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,258 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:44,567 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:45,298 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,345 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,390 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,437 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,483 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,530 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,576 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,622 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,671 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,718 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,766 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,812 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,858 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:45,905 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:46,572 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:47,140 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,195 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,240 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,286 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,421 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,673 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,718 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:47,764 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:47,809 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,305 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,350 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,396 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,444 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,489 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,536 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,573 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:48,583 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,630 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:48,677 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,724 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,769 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,817 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,861 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,909 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:48,956 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,004 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,049 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,095 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,142 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,188 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,235 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,281 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,327 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,375 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,421 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,468 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:49,513 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,559 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,604 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,650 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,696 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:49,787 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:50,544 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:50,574 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:50,957 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:51,009 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:51,057 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,102 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,147 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,195 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,243 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,290 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,339 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,385 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,433 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,480 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,528 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,575 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,633 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,684 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,735 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,783 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,832 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:51,880 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,107 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,184 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,234 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,282 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,328 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,378 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,424 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,575 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:52,665 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,712 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,763 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,856 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:52,951 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,189 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,236 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,281 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,327 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,374 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,517 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,565 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,659 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,753 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,800 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,848 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,894 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,941 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:53,988 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:54,034 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,087 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,134 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,180 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,228 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,278 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:54,325 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:54,371 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:54,420 INFO vision MainThread Detected 2 targets
+2026-03-23 18:42:54,467 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,518 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,567 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,581 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:54,617 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,761 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,901 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:54,946 INFO vision MainThread Detected 1 targets
+2026-03-23 18:42:56,582 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:42:58,583 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:00,584 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:02,585 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:03,682 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:03,869 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:03,914 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:03,960 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,006 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,051 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,099 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,144 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,190 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,428 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,589 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:04,803 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,896 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,942 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:04,987 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,034 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,079 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,218 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,263 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,363 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,455 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,500 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:05,781 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:06,590 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:08,591 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:10,597 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:12,598 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:14,356 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:14,599 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:15,861 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:15,908 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:15,955 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,004 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,050 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,097 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,143 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,189 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,326 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,468 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:16,601 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:17,358 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:17,404 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:17,680 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:17,878 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,066 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,387 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,445 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,506 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,574 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,601 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:18,645 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,694 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,757 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,831 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,912 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:18,955 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,009 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,073 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,135 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,199 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,262 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,325 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,388 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,450 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,513 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,581 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,643 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,706 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,773 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,839 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,900 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:19,955 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:20,018 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:20,081 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:20,144 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:20,604 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:21,863 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:21,925 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:21,981 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,046 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,184 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,349 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,398 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,443 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,489 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,531 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,577 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,605 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:22,624 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,671 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,725 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,771 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,827 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:22,954 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,027 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,073 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,131 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,191 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,251 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,311 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,372 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,432 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,491 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,552 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,611 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,675 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,738 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,792 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,852 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,912 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:23,972 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,032 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,092 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,152 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,212 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,279 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,333 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,394 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,453 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,515 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,578 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,608 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:24,639 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,698 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,762 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,824 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,874 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:24,934 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,239 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,301 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,363 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,416 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,478 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,536 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,615 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,671 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,723 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,784 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,838 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,898 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:25,960 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,027 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,083 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,136 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,205 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,263 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,315 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,610 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:26,674 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,740 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,796 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:26,854 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,029 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,089 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,300 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,379 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,426 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,479 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,523 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,572 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,618 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,663 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,719 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,778 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,853 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:27,955 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,017 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,071 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,139 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,190 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,247 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,366 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,482 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,600 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,612 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:28,657 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,721 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,774 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,836 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,897 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:28,997 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,115 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,168 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,283 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,338 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,404 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,454 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,510 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,567 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,623 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,684 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,791 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,853 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:29,905 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,023 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,074 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,129 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,186 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,242 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,300 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,354 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,414 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,467 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,523 INFO vision MainThread Detected 1 targets
+2026-03-23 18:43:30,616 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:32,616 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:34,621 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:36,622 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:38,625 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:40,626 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:42,629 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:44,632 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:45,203 INFO transfer MainThread TransferProcess: Received signal 2, stopping...
+2026-03-23 18:43:45,204 INFO sensor MainThread SensorProcess: Received signal 2, stopping...
+2026-03-23 18:43:45,211 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:43:45,264 INFO sensor MainThread === SensorProcess stopped ===
+2026-03-23 18:43:46,633 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:43:46,633 INFO transfer MainThread === TransferProcess stopped ===
+2026-03-23 18:45:03,661 INFO sensor MainThread SensorReader started
+2026-03-23 18:45:03,661 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:45:03,662 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 896 seconds
+2026-03-23 18:45:03,662 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:45:03,663 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:45:03,664 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:45:03,665 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:45:03,665 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:45:03,666 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:45:03,667 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address
+2026-03-23 18:45:06,623 ERROR transfer MainThread MqttBridge: 连接失败: [Errno 111] Connection refused
+2026-03-23 18:45:06,623 INFO transfer MainThread IotIngestUploader: → http://127.0.0.1:3001/api/iot/ingest
+2026-03-23 18:45:06,624 INFO transfer MainThread === TransferProcess started ===
+2026-03-23 18:45:07,737 INFO vision MainThread Initializing High-Performance Engine...
+2026-03-23 18:45:07,740 INFO vision MainThread Dashboard started on port 5001
+2026-03-23 18:45:07,757 INFO vision MainThread === Vision Main Loop (Multi-Threaded) Running ===
+2026-03-23 18:45:08,625 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:10,626 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:12,628 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:14,632 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:16,634 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:18,635 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:20,636 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:22,637 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:24,640 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:26,645 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:28,648 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:30,649 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:32,656 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:34,657 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:36,658 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:38,659 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:40,661 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:42,665 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:44,669 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:46,670 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:48,673 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:50,674 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:52,677 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:54,678 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:56,685 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:45:58,686 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:00,687 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:02,688 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:04,689 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:06,693 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:08,694 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:10,695 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:12,700 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:14,701 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:16,702 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:18,703 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:20,709 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:22,710 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:24,711 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:26,712 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:28,713 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:30,716 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:32,717 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:34,721 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:36,722 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:38,726 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:40,727 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:42,728 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:44,729 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:46,732 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:48,733 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:50,735 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:52,741 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:54,742 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:56,743 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:46:58,744 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:00,745 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:02,746 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:04,747 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:06,749 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:08,753 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:10,754 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:12,755 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:14,756 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:16,759 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:18,760 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:20,761 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:22,762 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:24,763 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:26,769 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:28,770 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:30,771 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:32,772 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:34,773 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:36,775 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:38,781 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:40,784 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:42,785 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:44,788 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:46,791 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:48,792 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:50,792 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:52,795 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:54,796 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:56,801 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:47:58,801 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:00,802 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:02,803 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:04,804 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:06,806 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:08,809 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:10,811 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:12,815 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:14,816 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:16,824 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:18,828 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:20,829 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:22,831 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:24,832 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:26,836 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:28,841 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:30,844 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:32,845 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:34,846 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:36,847 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:38,848 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:40,852 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:42,853 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:44,856 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:46,859 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:48,860 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:50,865 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:52,866 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:54,868 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:56,872 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:48:58,873 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:00,874 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:02,875 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:04,876 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:06,881 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:08,884 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:10,892 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:12,893 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:14,894 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:16,897 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:18,898 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:20,901 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:22,905 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:24,906 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:26,907 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:28,917 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:30,921 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:32,922 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:34,925 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:36,926 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:38,927 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:40,932 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:42,937 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:44,938 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:46,939 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:48,940 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:50,944 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:52,945 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:54,946 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:56,947 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:49:58,948 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:00,949 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:02,952 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:04,953 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:06,954 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:08,955 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:10,956 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:12,960 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:14,965 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:16,966 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:18,967 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:20,973 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:22,975 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:24,976 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:26,979 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:28,980 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:30,984 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:32,985 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:34,986 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:36,987 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:38,988 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:40,993 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:42,994 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:44,996 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:46,997 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:49,000 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:51,001 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:53,002 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:55,005 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:57,005 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:50:59,008 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:01,009 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:03,010 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:05,011 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:07,012 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:09,016 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:11,017 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:13,018 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:15,019 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:17,022 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:19,023 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:21,028 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:23,032 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:25,033 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:27,034 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:29,041 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:31,043 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:33,048 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:35,053 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:37,054 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:39,055 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:41,060 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:43,065 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:45,067 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:47,068 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:49,073 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:51,077 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:53,080 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:55,081 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:57,082 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:51:59,083 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:01,088 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:03,089 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:05,090 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:07,091 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:09,092 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:11,096 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:13,097 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:15,098 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:17,100 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:19,101 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:21,104 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:23,105 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:25,109 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:27,110 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:29,111 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:31,112 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:33,116 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:35,118 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:37,119 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:39,120 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:41,125 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:43,129 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:45,131 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:47,131 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:49,132 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:51,136 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:53,139 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:55,144 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:57,145 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:52:59,146 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:01,147 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:03,150 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:05,153 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:07,154 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:09,155 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:11,156 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:13,160 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:15,164 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:17,165 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:19,166 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:21,168 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:23,170 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:25,171 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:27,172 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:29,173 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:31,175 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:33,177 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:35,179 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:37,181 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:39,182 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:41,183 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:43,184 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:45,189 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:47,189 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:49,190 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:51,191 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:53,197 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:55,200 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:57,201 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:53:59,202 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:54:01,205 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:54:03,205 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:54:05,209 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>
+2026-03-23 18:54:07,210 WARNING transfer iot-ingest IotIngestUploader: 上传失败: <urlopen error [Errno 111] Connection refused>

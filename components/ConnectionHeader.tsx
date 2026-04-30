@@ -1,116 +1,91 @@
-
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { Wifi, WifiOff, RefreshCw, LogOut } from 'lucide-react';
 import { ConnectionStatus } from '../types';
-import { Database, RefreshCw, Server, Shield, LogOut } from 'lucide-react';
 
-interface Props {
+interface ConnectionHeaderProps {
   status: ConnectionStatus;
-  onSync: () => void;
-  onDisconnect: () => void;
-  lastUpdatedAt?: number | null;
-  refreshIntervalMs: number;
-  onRefreshIntervalChange: (value: number) => void;
-  isAdmin?: boolean;
-  onOpenAdmin?: () => void;
-  onLogout?: () => void;
+  lastUpdated?: number;
+  onLogout: () => void;
 }
 
-export const ConnectionHeader: React.FC<Props> = ({ 
-  status, 
-  onSync, 
-  onDisconnect, 
-  lastUpdatedAt, 
-  refreshIntervalMs, 
-  onRefreshIntervalChange,
-  isAdmin,
-  onOpenAdmin,
+export const ConnectionHeader: React.FC<ConnectionHeaderProps> = ({
+  status,
+  lastUpdated,
   onLogout
 }) => {
-  const lastUpdatedLabel = lastUpdatedAt
-    ? new Date(lastUpdatedAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
-    : '未更新';
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'connected':
+        return <Wifi className="w-5 h-5 text-green-500" />;
+      case 'connecting':
+        return <RefreshCw className="w-5 h-5 text-yellow-500 animate-spin" />;
+      case 'disconnected':
+      default:
+        return <WifiOff className="w-5 h-5 text-red-500" />;
+    }
+  };
+
+  const getStatusText = () => {
+    switch (status) {
+      case 'connected':
+        return '已连接';
+      case 'connecting':
+        return '连接中...';
+      case 'disconnected':
+      default:
+        return '未连接';
+    }
+  };
+
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return '从未';
+    const diff = currentTime.getTime() - lastUpdated;
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+    return new Date(lastUpdated).toLocaleString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
-    <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
-              <Database size={20} />
-            </div>
-            <span className="text-xl font-bold text-gray-800 tracking-tight">SmartHive <span className="text-indigo-600">DB</span></span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
-               <Server size={14} className="text-gray-400" />
-               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">MySQL 同步模式</span>
-            </div>
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-100">
-               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">更新于 {lastUpdatedLabel}</span>
-            </div>
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-100">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">自动刷新</span>
-              <select
-                value={refreshIntervalMs}
-                onChange={(event) => onRefreshIntervalChange(Number(event.target.value))}
-                className="text-[10px] font-bold text-gray-600 bg-transparent outline-none"
-              >
-                <option value={0}>关闭</option>
-                <option value={5000}>5 秒</option>
-                <option value={15000}>15 秒</option>
-                <option value={30000}>30 秒</option>
-                <option value={60000}>60 秒</option>
-              </select>
-            </div>
-
-            <button
-              onClick={status === 'connected' ? onDisconnect : onSync}
-              disabled={status === 'connecting'}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                status === 'connected'
-                  ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {status === 'connected' ? (
-                <>
-                  <RefreshCw size={16} className="animate-spin-slow" /> 已同步
-                </>
-              ) : status === 'connecting' ? (
-                <>
-                  <RefreshCw size={16} className="animate-spin" /> 正在握手...
-                </>
-              ) : (
-                <>
-                  <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                  连接数据库
-                </>
-              )}
-            </button>
-
-            {isAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                title="管理员控制台"
-              >
-                <Shield size={16} />
-              </button>
-            )}
-
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="退出登录"
-            >
-              <LogOut size={16} />
-            </button>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-4 mb-4 sm:mb-6">
+      <div className="flex items-center justify-between gap-2">
+        {/* 左侧：连接状态（定位已移到“实时物联网监控”面板，避免重复） */}
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-colors ${
+            status === 'connected' ? 'bg-green-50' : status === 'connecting' ? 'bg-yellow-50' : 'bg-red-50'
+          }`}>
+            {getStatusIcon()}
+            <span className={`text-xs font-bold hidden xs:inline ${
+              status === 'connected' ? 'text-green-700' : status === 'connecting' ? 'text-yellow-700' : 'text-red-700'
+            }`}>
+              {getStatusText()}
+            </span>
           </div>
         </div>
+
+        {/* 右侧：操作按钮 */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="hidden md:flex flex-col items-end mr-2">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">最后更新</div>
+            <div className="text-xs font-semibold text-gray-600">{formatLastUpdated()}</div>
+          </div>
+          
+          <button
+            onClick={onLogout}
+            className="p-2 sm:px-3 sm:py-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-gray-100 transition-all active:scale-95"
+            title="退出登录"
+          >
+            <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline ml-1.5 text-sm font-bold">退出</span>
+          </button>
+        </div>
       </div>
-      <style>{`
-        .animate-spin-slow { animation: spin 3s linear infinite; }
-      `}</style>
     </div>
   );
 };

@@ -1,0 +1,9 @@
+{
+  "apiToken": "2006520",
+  "gaodeApiKey": "",
+  "qwenApiKey": "你的通义千问API密钥",
+  "corsOrigin": "https://yourdomain.com",
+  "videoStreamUrl": "/api/vision/stream.mjpg",
+  "videoStreamMode": "mjpeg",
+  "visionDeviceId": "pi5-vision-client"
+}

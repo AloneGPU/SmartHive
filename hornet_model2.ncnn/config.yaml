@@ -1,0 +1,131 @@
+# SmartHive config（密钥请用环境变量，勿写在本文件）
+# 与 hornet_model2_ncnn_model 相同约定：SMART_HIVE_MQTT_*、SMART_HIVE_API_TOKEN
+# 详见 hornet_model2_ncnn_model/env.example；systemd 可用 EnvironmentFile=.env
+#
+# Restart services after editing:
+#   sudo systemctl restart hive-sensor
+#   sudo systemctl restart hive-vision
+#   sudo systemctl restart hive-transfer
+
+camera:
+  source: 0
+  width: 640
+  height: 480
+  fps: 30
+  exposure: -1
+  backend: picamera2
+
+model:
+  param_path: ./model.ncnn.param
+  bin_path: ./model.ncnn.bin
+  input_size: [320, 320]
+  input_name: in0
+  output_name: out0
+  confidence_threshold: 0.45
+  nms_threshold: 0.45
+  threads: 4
+  extractor_pool_size: 4
+  use_vulkan: false
+
+queues:
+  frame_queue_depth: 8
+  result_queue_depth: 128
+
+roi:
+  polygons: []
+
+output:
+  csv_path: ./pi5_results.csv
+  websocket_host: 0.0.0.0
+  websocket_port: 8765
+  websocket_enabled: true
+  websocket_push_timeout_ms: 200
+
+mqtt:
+  enabled: true
+  host: 127.0.0.1
+  port: 1883
+  username: ""
+  password: ""
+  client_id: pi5-vision-client
+  data_topic: smarthive/pi5/sensors
+  command_topic: pi5/vision/command
+  error_topic: pi5/vision/error
+  status_topic: pi5/vision/status
+  publish_interval_seconds: 2.0
+  publish_qos: 1
+  compress_payload: true
+  cache_file: ./runtime/mqtt_cache.jsonl
+
+server_upload:
+  enabled: true
+  url: http://127.0.0.1:3001/api/vision/frame
+  token: ""
+  device_id: pi5-vision-client
+  interval_seconds: 0.5
+  jpeg_quality: 80
+  timeout_seconds: 2.0
+
+archive:
+  enabled: true
+  beehive_url: http://127.0.0.1:3001/api/beehive
+  api_token: ""
+  interval_seconds: 3600
+  align_to_hour: true
+  timeout_seconds: 10.0
+  max_retries: 3
+
+watchdog:
+  stall_seconds: 5
+  restart_backoff_seconds: 1
+
+logging:
+  level: INFO
+  file_path: /var/log/pi5_vision.log
+
+visualization:
+  enabled: true
+  host: 0.0.0.0
+  port: 5001
+  stream_fps: 15
+  stream_jpeg_quality: 65
+
+sensor:
+  hx711_enabled: true
+  hx711_dout_pin: 5
+  hx711_sck_pin: 6
+  hx711_reference_unit: 1.0
+  hx711_tare_on_start: true
+  hx711_read_interval: 0.5
+  hx711_filter_window: 5
+  dht_gpio_pin: 4
+  dht_read_interval: 5.0
+  gps_port: /dev/ttyAMA4
+  gps_baud: 9600
+  ir_enabled: true
+  ir_outer_pin: 23
+  ir_inner_pin: 24
+  ir_active_low: true
+  ir_debounce_ms: 30
+  ir_direction_window_ms: 500
+
+servo:
+  enabled: true
+  gpio_pin: 18
+  pwm_frequency: 50
+  pulse_min_us: 500
+  pulse_max_us: 2500
+  angle_min: 10.0
+  angle_max: 170.0
+  angle_center: 90.0
+  scan_speed_dps: 25.0
+  lock_lost_seconds: 2.0
+  track_deadzone_px: 40
+  track_gain: 0.05
+  mqtt_command_topic: pi5/servo/command
+
+uds_path: /tmp/pi5_vision.sock
+
+diagnostics:
+  enabled: false
+  summary_interval_seconds: 15.0

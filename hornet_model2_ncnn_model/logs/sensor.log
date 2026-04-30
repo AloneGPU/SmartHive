@@ -1,0 +1,12 @@
+2026-03-23 18:45:03,661 INFO sensor MainThread SensorReader started
+2026-03-23 18:45:03,661 INFO sensor MainThread MqttTelemetryPublisher started
+2026-03-23 18:45:03,662 INFO sensor hourly-archiver HourlyArchiver: First archive will trigger in 896 seconds
+/home/first/Desktop/yolov8/hornet_model2_ncnn_model/sensor_process.py:417: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+  self._client = mqtt.Client(client_id=f"{self._cfg.client_id}-telemetry")
+2026-03-23 18:45:03,662 INFO sensor MainThread HourlyArchiver started -> http://127.0.0.1:3001/api/beehive
+2026-03-23 18:45:03,663 INFO sensor MainThread === SensorProcess started ===
+2026-03-23 18:45:03,664 INFO sensor sensor-reader SensorReader: DHT22 initialized on GPIO4
+2026-03-23 18:45:03,665 WARNING sensor sensor-reader SensorReader: hx711 library not installed, weight unavailable
+2026-03-23 18:45:03,665 INFO sensor sensor-reader SensorReader: GPS initialized /dev/ttyAMA4@9600
+2026-03-23 18:45:03,666 WARNING sensor mqtt-telemetry MqttPublisher: Connection failed: [Errno 111] Connection refused
+2026-03-23 18:45:03,667 WARNING sensor sensor-reader SensorReader: IR initialization failed: Cannot determine SOC peripheral base address

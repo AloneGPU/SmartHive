@@ -1,17 +1,8 @@
-import { useMemo } from 'react';
-import { Activity, Download, Radio, Thermometer, Droplets, Wifi, Bug, Calendar, Clock } from 'lucide-react';
+import { useMemo, useEffect, useState } from 'react';
+import { Activity, Download, Radio, Thermometer, Droplets, Wifi, Bug, Clock, Pause, Play, RotateCcw } from 'lucide-react';
 import { exportIotHistoryCsv, type IotMonitorSnapshot, type IotSensorPoint } from '../../services/dataService';
-import { BeehiveData } from '../../types';
-import {
-  buildFlowSeries,
-  resolveInsideHumidity,
-  resolveInsideTemperature,
-  resolveOutsideHumidity,
-  resolveOutsideTemperature,
-  toFiniteNumber
-} from '../../services/hiveDataAdapter';
 
-const valueOfAny = (rows: IotSensorPoint[], sensorTypes: string[]) => {
+const valueOfAny = (rows: IotSensorPoint[], sensorTypes: string[]): number | null => {
   for (const sensorType of sensorTypes) {
     const hit = rows.find((r) => r.sensorType === sensorType);
     if (hit) {
@@ -22,66 +13,49 @@ const valueOfAny = (rows: IotSensorPoint[], sensorTypes: string[]) => {
   return null;
 };
 
-const sumFlow = (
-  points: Array<{ timestamp: number; beesIn: number; beesOut: number }>,
-  rangeMs: number
-) => {
-  const cutoff = Date.now() - rangeMs;
-  return points
-    .filter((point) => point.timestamp >= cutoff)
-    .reduce(
-      (acc, point) => ({
-        beesIn: acc.beesIn + point.beesIn,
-        beesOut: acc.beesOut + point.beesOut
-      }),
-      { beesIn: 0, beesOut: 0 }
-    );
+const formatStreamAge = (ts: number) => {
+  const d = Date.now() - ts;
+  if (!Number.isFinite(d) || d < 0) return '--';
+  if (d < 2000) return '刚刚';
+  if (d < 60_000) return `${Math.floor(d / 1000)} 秒前`;
+  return new Date(ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 };
 
 export const IotRealtimePanel = (props: {
   latest: IotSensorPoint[];
   history: IotSensorPoint[];
-  mainData: BeehiveData | null;
   monitor: IotMonitorSnapshot | null;
   streamConnected: boolean;
   baseUrl: string;
   token: string;
   deviceId: string;
+  isPaused?: boolean;
+  onPause?: () => void;
+  onResume?: () => void;
+  onRefresh?: () => void;
+  /** SSE/MQTT 最近一次收到数据或心跳的时间戳（ms） */
+  streamLastAt?: number | null;
 }) => {
-  const tempIn =
-    valueOfAny(props.latest, ['inside_temperature', 'temperature']) ?? resolveInsideTemperature(props.mainData);
-  const humIn =
-    valueOfAny(props.latest, ['inside_humidity', 'humidity']) ?? resolveInsideHumidity(props.mainData);
-  const tempOut = valueOfAny(props.latest, ['outside_temperature']) ?? resolveOutsideTemperature(props.mainData);
-  const humOut = valueOfAny(props.latest, ['outside_humidity']) ?? resolveOutsideHumidity(props.mainData);
-  const hornetCount =
-    valueOfAny(props.latest, ['hornet_count', 'hornets_detected']) ?? toFiniteNumber(props.mainData?.hornetsDetected);
+  const latestRows = Array.isArray(props.latest) ? props.latest : [];
+  const historyRows = Array.isArray(props.history) ? props.history : [];
+  const streamLive = props.streamConnected && !props.isPaused;
+  const [, setAgeTick] = useState(0);
+  useEffect(() => {
+    if (!streamLive) return;
+    const id = window.setInterval(() => setAgeTick((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [streamLive]);
 
-  const flowSeries = useMemo(() => {
-    const byTimestamp = new Map<number, { beesIn?: number; beesOut?: number }>();
-    for (const point of props.history) {
-      const value = Number(point.value);
-      if (!Number.isFinite(value)) continue;
-      if (point.sensorType !== 'bees_in' && point.sensorType !== 'bees_out') continue;
-      const prev = byTimestamp.get(point.timestamp) || {};
-      if (point.sensorType === 'bees_in') prev.beesIn = value;
-      if (point.sensorType === 'bees_out') prev.beesOut = value;
-      byTimestamp.set(point.timestamp, prev);
-    }
-    return buildFlowSeries(
-      Array.from(byTimestamp.entries()).map(([timestamp, row]) => ({
-        timestamp,
-        beesIn: row.beesIn,
-        beesOut: row.beesOut
-      }))
-    );
-  }, [props.history]);
+  // 读数仅来自 IoT 通道（bootstrap 拉取的 latest + SSE 推送）；断流/暂停也不使用库表 mainData
+  const tempIn = valueOfAny(latestRows, ['inside_temperature', 'temperature']);
+  const humIn = valueOfAny(latestRows, ['inside_humidity', 'humidity']);
+  const tempOut = valueOfAny(latestRows, ['outside_temperature']);
+  const humOut = valueOfAny(latestRows, ['outside_humidity']);
+  const weight = valueOfAny(latestRows, ['weight']);
+  const currentIn = valueOfAny(latestRows, ['bees_in', 'bee_in', 'in_count']) ?? 0;
+  const currentOut = valueOfAny(latestRows, ['bees_out', 'bee_out', 'out_count']) ?? 0;
+  const hornetCount = valueOfAny(latestRows, ['hornet_count', 'hornets_detected']);
 
-  const latestFlow = flowSeries.points[flowSeries.points.length - 1] || null;
-  const hourFlow = useMemo(() => sumFlow(flowSeries.points, 60 * 60 * 1000), [flowSeries.points]);
-  const dayFlow = useMemo(() => sumFlow(flowSeries.points, 24 * 60 * 60 * 1000), [flowSeries.points]);
-  const currentIn = latestFlow ? latestFlow.beesIn : 0;
-  const currentOut = latestFlow ? latestFlow.beesOut : 0;
   const thresholdIn = 100;
   const thresholdOut = 100;
   const isInThresholdReached = currentIn >= thresholdIn;
@@ -101,7 +75,7 @@ export const IotRealtimePanel = (props: {
 
   const trend = useMemo(() => {
     const byHour = new Map<number, { tIn: number[]; hIn: number[]; tOut: number[]; hOut: number[]; hornets: number[] }>();
-    for (const p of props.history) {
+    for (const p of historyRows) {
       if (!Number.isFinite(Number(p.value))) continue;
       const hour = Math.floor(p.timestamp / 3600000) * 3600000;
       const prev = byHour.get(hour) || { tIn: [], hIn: [], tOut: [], hOut: [], hornets: [] };
@@ -125,23 +99,62 @@ export const IotRealtimePanel = (props: {
       }))
       .sort((a, b) => a.ts - b.ts)
       .slice(-24);
-  }, [props.history]);
+  }, [historyRows]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-gray-800 font-bold text-sm sm:text-base">
-          <Radio className={`w-4 h-4 sm:w-5 sm:h-5 ${props.streamConnected ? 'text-emerald-500 animate-pulse' : 'text-red-500'}`} />
+          <Radio className={`w-4 h-4 sm:w-5 sm:h-5 ${props.streamConnected && !props.isPaused ? 'text-emerald-500 animate-pulse' : 'text-red-500'}`} />
           物联网实时监控
+          {props.isPaused && (
+            <span className="ml-2 px-2 py-0.5 text-[10px] bg-yellow-100 text-yellow-700 rounded-full font-normal">
+              已暂停
+            </span>
+          )}
+          {streamLive && (
+            <span className="ml-2 px-2 py-0.5 text-[10px] bg-emerald-50 text-emerald-700 rounded-full font-normal border border-emerald-100">
+              MQTT 实时
+            </span>
+          )}
+          {props.streamLastAt != null && streamLive ? (
+            <span className="text-[10px] text-gray-400 font-normal ml-1">更新 {formatStreamAge(props.streamLastAt)}</span>
+          ) : null}
         </div>
-        <button
-          type="button"
-          onClick={onExport}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-semibold transition-colors"
-        >
-          <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          导出数据
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={props.isPaused ? props.onResume : props.onPause}
+            disabled={!props.onPause || !props.onResume}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
+              props.isPaused
+                ? 'bg-green-500 hover:bg-green-600 text-white'
+                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+            } ${(!props.onPause || !props.onResume) ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {props.isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+            {props.isPaused ? '恢复' : '暂停'}
+          </button>
+          <button
+            type="button"
+            onClick={props.onRefresh}
+            disabled={!props.onRefresh}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-semibold transition-colors ${
+              !props.onRefresh ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            刷新
+          </button>
+          <button
+            type="button"
+            onClick={onExport}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-semibold transition-colors"
+          >
+            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            导出历史明细
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
@@ -181,24 +194,36 @@ export const IotRealtimePanel = (props: {
           </div>
         </div>
 
+        {/* 重量卡片：对应 OLED 的 W */}
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 sm:p-4 col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
+          <div className="text-[10px] sm:text-xs font-bold text-emerald-700 flex items-center gap-1 uppercase tracking-wider">
+            <Activity className="w-3.5 h-3.5" />
+            蜂箱重量
+          </div>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-900 mt-1">
+            {weight === null ? '--' : weight.toFixed(1)}
+          </div>
+          <div className="text-[9px] mt-1 font-bold text-emerald-500">kg</div>
+        </div>
+
         {/* 胡蜂卡片 */}
         <div
-          className={`rounded-2xl border transition-all duration-300 ${hornetCount && hornetCount > 0 ? 'border-red-200 bg-red-50 shadow-sm shadow-red-100' : 'border-gray-100 bg-gray-50/50'} p-3 sm:p-4 col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1`}
+          className={`rounded-2xl border transition-all duration-300 ${hornetCount !== null && hornetCount > 0 ? 'border-red-200 bg-red-50 shadow-sm shadow-red-100' : 'border-gray-100 bg-gray-50/50'} p-3 sm:p-4 col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1`}
         >
-          <div className={`text-[10px] sm:text-xs font-bold ${hornetCount && hornetCount > 0 ? 'text-red-700' : 'text-gray-500'} flex items-center gap-1 uppercase tracking-wider`}>
-            <Bug className={`w-3.5 h-3.5 ${hornetCount && hornetCount > 0 ? 'animate-bounce' : ''}`} />
+          <div className={`text-[10px] sm:text-xs font-bold ${hornetCount !== null && hornetCount > 0 ? 'text-red-700' : 'text-gray-500'} flex items-center gap-1 uppercase tracking-wider`}>
+            <Bug className={`w-3.5 h-3.5 ${hornetCount !== null && hornetCount > 0 ? 'animate-bounce' : ''}`} />
             胡蜂监测
           </div>
-          <div className={`text-2xl sm:text-3xl font-black ${hornetCount && hornetCount > 0 ? 'text-red-600' : 'text-gray-900'} mt-1`}>
-            {hornetCount === null ? '0' : hornetCount}
+          <div className={`text-2xl sm:text-3xl font-black ${hornetCount !== null && hornetCount > 0 ? 'text-red-600' : 'text-gray-900'} mt-1`}>
+            {hornetCount === null ? '--' : hornetCount}
           </div>
-          <div className={`text-[9px] mt-1 font-bold ${hornetCount && hornetCount > 0 ? 'text-red-400' : 'text-gray-400'}`}>
-            {hornetCount && hornetCount > 0 ? '发现威胁' : '暂无异常'}
+          <div className={`text-[9px] mt-1 font-bold ${hornetCount !== null && hornetCount > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+            {hornetCount !== null && hornetCount > 0 ? '发现威胁' : '暂无异常'}
           </div>
         </div>
 
-        {/* 进出卡片 */}
-        <div className="rounded-2xl border border-purple-100 bg-purple-50/50 p-3 sm:p-4 col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
+        {/* 进出卡片：直接显示 OLED 的 Bee IN/OUT 当前累计值 */}
+        <div className="rounded-2xl border border-purple-100 bg-purple-50/50 p-3 sm:p-4 col-span-2 sm:col-span-1 lg:col-span-1 xl:col-span-2">
           <div className="text-[10px] sm:text-xs font-bold text-purple-700 flex items-center gap-1 mb-2 uppercase tracking-wider">
             <Activity className="w-3.5 h-3.5" />
             蜜蜂流量
@@ -252,9 +277,9 @@ export const IotRealtimePanel = (props: {
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white/50">
           <div className="text-xs font-bold text-gray-500 flex items-center gap-1.5 uppercase tracking-wider">
             <Clock className="w-3.5 h-3.5" />
-            近24小时趋势概览
+            SSE 实时趋势
           </div>
-          <div className="text-[10px] text-gray-400 italic">滑动查看更多</div>
+          <div className="text-[10px] text-gray-400 italic">仅显示本次页面收到的 MQTT/SSE 数据</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[11px] sm:text-xs min-w-[480px]">
@@ -272,7 +297,7 @@ export const IotRealtimePanel = (props: {
               {trend.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-gray-400 italic">
-                    暂无历史趋势数据
+                    等待 MQTT 实时数据
                   </td>
                 </tr>
               ) : (
@@ -312,4 +337,3 @@ export const IotRealtimePanel = (props: {
     </div>
   );
 };
-

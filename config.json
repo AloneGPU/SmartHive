@@ -1,9 +1,10 @@
 {
-  "apiToken": "2006520",
-  "gaodeApiKey": "",
-  "qwenApiKey": "你的通义千问API密钥",
-  "corsOrigin": "https://yourdomain.com",
-  "videoStreamUrl": "/api/vision/stream.mjpg",
+  "apiToken": "G1AUlrlDXiQMl6Kc",
+  "gaodeApiKey": "c751665ba777f9843751a7b0722be920",
+  "qwenApiKey": "sk-22dd07f1c08542c8abacfe58bb7b6c52",
+  "corsOrigin": "http://121.196.155.132",
+  "videoStreamUrl": "http://10.151.204.114:5001/stream",
   "videoStreamMode": "mjpeg",
-  "visionDeviceId": "pi5-vision-client"
+  "visionDeviceId": "pi5-vision-client",
+  "videoStreamSource": "direct"
 }

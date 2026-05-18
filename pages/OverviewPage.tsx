@@ -43,7 +43,8 @@ export const OverviewPage = () => {
 
   const latestQuery = useLiveHiveQuery();
   const rangeQuery = useHiveRangeQuery(startMs, endMs, { id: 'overview' });
-  const iotDeviceId = 'pi5-vision-client'; // 固定设备ID
+  /** 与后端 VISION_DEVICE_ID / 管理后台「IoT 设备 ID」及树莓派 MQTT deviceId 一致 */
+  const iotDeviceId = (aiConfig.visionDeviceId || 'pi5-vision-client').trim() || 'pi5-vision-client';
   const iotRealtime = useIotRealtime(iotDeviceId, rangeMs, {
     baseUrl: aiConfig.apiBaseUrl || '/api',
     token: aiConfig.apiToken,
@@ -72,7 +73,7 @@ export const OverviewPage = () => {
     { id: 'hornet', label: '马蜂异常' },
     { id: 'env', label: '环境异常' }
   ];
-  const resolvedAddress = (location.address || '').trim();
+  const resolvedAddress = (typeof location.address === 'string' ? location.address : '').trim();
   const locationStatus = hasCoordinates ? (location.status || 'resolving') : 'error';
   const statusClassName =
     locationStatus === 'resolved'
@@ -84,7 +85,7 @@ export const OverviewPage = () => {
     locationStatus === 'resolved' ? '位置已解析' : locationStatus === 'resolving' ? '位置解析中' : '位置未解析';
   const divisionText = [location.province, location.city, location.district, location.road].filter(Boolean).join(' / ');
   const shouldShowGaodeHint = hasCoordinates && locationStatus === 'error';
-  const locationErrorText = (location.errorMessage || '').trim();
+  const locationErrorText = (typeof location.errorMessage === 'string' ? location.errorMessage : '').trim();
   const locationHintText = (() => {
     if (!locationErrorText) {
       return '经纬度已收到，但地址解析失败。请在“管理后台 - 服务配置”填写高德 API Key，或检查后端 `GAODE_API_KEY`。';
@@ -174,12 +175,16 @@ export const OverviewPage = () => {
       <IotRealtimePanel
         latest={iotRealtime.latest}
         history={iotRealtime.history}
-        mainData={latestQuery.data || null}
         monitor={iotRealtime.monitor}
         streamConnected={iotRealtime.streamConnected}
         baseUrl={aiConfig.apiBaseUrl || '/api'}
         token={aiConfig.apiToken}
-        deviceId={iotDeviceId}
+        deviceId={iotRealtime.activeDeviceId || iotDeviceId}
+        isPaused={iotRealtime.isPaused}
+        onPause={iotRealtime.pause}
+        onResume={iotRealtime.resume}
+        onRefresh={iotRealtime.refreshData}
+        streamLastAt={iotRealtime.lastUpdated}
       />
 
       {/* 天气组件 - 所有设备通用 */}

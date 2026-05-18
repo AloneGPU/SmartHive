@@ -15,6 +15,7 @@ type ClientInfo = {
 
 class RealtimeHub {
   private clients = new Map<Response, ClientInfo>();
+  private latestTelemetryByDevice = new Map<string, RealtimeEvent>();
   private maxClients = 100;
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private clientTimeout = 120000; // 2分钟无活动则断开
@@ -57,6 +58,7 @@ class RealtimeHub {
   }
 
   broadcast(event: RealtimeEvent) {
+    this.rememberTelemetry(event);
     const body = `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`;
     const deadClients: Response[] = [];
 
@@ -79,6 +81,22 @@ class RealtimeHub {
     });
   }
 
+  latestTelemetry(deviceId?: string): RealtimeEvent | null {
+    if (deviceId) {
+      return this.latestTelemetryByDevice.get(deviceId) || null;
+    }
+    const events = Array.from(this.latestTelemetryByDevice.values())
+      .sort((a, b) => Number(b.ts || 0) - Number(a.ts || 0));
+    return events[0] || null;
+  }
+
+  private rememberTelemetry(event: RealtimeEvent) {
+    if (event.type !== 'iot.telemetry') return;
+    const deviceId = String(event.payload?.deviceId || '').trim();
+    if (!deviceId) return;
+    this.latestTelemetryByDevice.set(deviceId, event);
+  }
+
   private startHeartbeat() {
     this.heartbeatInterval = setInterval(() => {
       const now = Date.now();
@@ -92,9 +110,11 @@ class RealtimeHub {
           continue;
         }
 
-        // 发送心跳
+        // 发送 SSE 注释行保活，并刷新活动时间（否则仅广播数据会更新 lastActivity，纯心跳会导致被误判超时断开）
         try {
           res.write(': heartbeat\n\n');
+          res.write('event: ping\ndata: {}\n\n');
+          info.lastActivity = Date.now();
         } catch (error) {
           console.error(`[RealtimeHub] 心跳发送失败: ${info.ip}`, error);
           deadClients.push(res);

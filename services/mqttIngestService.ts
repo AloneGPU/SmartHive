@@ -12,8 +12,8 @@ import {
   shouldPersistMirrorForDevice
 } from './iotBridge';
 
-// 每小时存储的缓存
-type BucketSensorAgg = { values: number[]; timestamps: number[] };
+// 每小时存储的缓存：保留 value+timestamp，便于区分平均值、末值、差值、最大值。
+type BucketSensorAgg = { samples: Array<{ value: number; timestamp: number }> };
 type DeviceBucketCache = Record<string, Record<string, BucketSensorAgg>>;
 interface HourlyCache {
   // deviceId -> bucketKey -> sensorType -> agg
@@ -150,9 +150,13 @@ export const startMqttIngestService = () => {
     // Replay payload should not affect “online/lastSeenAt” to avoid history data overwriting live status.
     if (!isReplay) {
       const status: IotDeviceStatus = buildIotDeviceStatus(parsed.deviceId, parsed.status, parsed.timestamp, points.length);
-      const statusSaved = await upsertIotDeviceStatus(status);
-      if (!statusSaved) {
-        stats.lastError = `Failed to upsert device status for ${parsed.deviceId}`;
+      try {
+        const statusSaved = await upsertIotDeviceStatus(status);
+        if (!statusSaved) {
+          stats.lastError = `Failed to upsert device status for ${parsed.deviceId}`;
+        }
+      } catch (error) {
+        stats.lastError = `Failed to upsert device status for ${parsed.deviceId}: ${error instanceof Error ? error.message : String(error)}`;
       }
     }
 
@@ -162,10 +166,14 @@ export const startMqttIngestService = () => {
     const pointsToPersist = selectTelemetryPointsForPersistence(points);
     const skipped = points.length - pointsToPersist.length;
     if (pointsToPersist.length > 0) {
-      const inserted = await insertIotTelemetryBatch(pointsToPersist);
-      stats.persistedPoints += Math.max(0, inserted);
-      if (inserted <= 0) {
-        stats.lastError = `Failed to persist iot_telemetry points for ${parsed.deviceId}`;
+      try {
+        const inserted = await insertIotTelemetryBatch(pointsToPersist);
+        stats.persistedPoints += Math.max(0, inserted);
+        if (inserted <= 0) {
+          stats.lastError = `Failed to persist iot_telemetry points for ${parsed.deviceId}`;
+        }
+      } catch (error) {
+        stats.lastError = `Failed to persist iot_telemetry points for ${parsed.deviceId}: ${error instanceof Error ? error.message : String(error)}`;
       }
     }
     if (skipped > 0) {
@@ -179,9 +187,8 @@ export const startMqttIngestService = () => {
 
     for (const sensor of parsed.sensors) {
       const byType = hourlyCache[parsed.deviceId][bucketKey];
-      if (!byType[sensor.type]) byType[sensor.type] = { values: [], timestamps: [] };
-      byType[sensor.type].values.push(sensor.value);
-      byType[sensor.type].timestamps.push(parsed.timestamp);
+      if (!byType[sensor.type]) byType[sensor.type] = { samples: [] };
+      byType[sensor.type].samples.push({ value: sensor.value, timestamp: parsed.timestamp });
     }
 
     console.log(`[MQTT] Received data from ${parsed.deviceId}, cached for hourly storage`);
@@ -193,17 +200,64 @@ export const startMqttIngestService = () => {
   });
 };
 
-const aggregateBucketData = (deviceId: string, bucketKey: string): BeehiveData | null => {
-  const deviceCache = hourlyCache[deviceId];
-  const bucketCache = deviceCache?.[bucketKey];
+const aggregateBucketCache = (
+  deviceId: string,
+  bucketKey: string,
+  bucketCache: Record<string, BucketSensorAgg> | undefined
+): BeehiveData | null => {
   if (!bucketCache) return null;
 
-  // 计算每个传感器的平均值
+  const sortSamples = (samples: Array<{ value: number; timestamp: number }>) =>
+    samples
+      .filter((s) => Number.isFinite(Number(s.value)) && Number.isFinite(Number(s.timestamp)))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+  const avg = (samples: Array<{ value: number; timestamp: number }>) => {
+    const values = samples.map((s) => Number(s.value)).filter(Number.isFinite);
+    if (values.length === 0) return undefined;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  };
+
+  const last = (samples: Array<{ value: number; timestamp: number }>) => {
+    const ordered = sortSamples(samples);
+    return ordered.length > 0 ? ordered[ordered.length - 1].value : undefined;
+  };
+
+  const max = (samples: Array<{ value: number; timestamp: number }>) => {
+    const values = samples.map((s) => Number(s.value)).filter(Number.isFinite);
+    return values.length > 0 ? Math.max(...values) : undefined;
+  };
+
+  const delta = (samples: Array<{ value: number; timestamp: number }>) => {
+    const ordered = sortSamples(samples);
+    if (ordered.length === 0) return undefined;
+    if (ordered.length === 1) return 0;
+    const first = ordered[0].value;
+    const lastValue = ordered[ordered.length - 1].value;
+    return Math.max(0, Math.round(lastValue - first));
+  };
+
+  const bucketRules: Record<string, (samples: Array<{ value: number; timestamp: number }>) => number | undefined> = {
+    inside_temperature: avg,
+    inside_humidity: avg,
+    outside_temperature: avg,
+    outside_humidity: avg,
+    weight: last,
+    latitude: last,
+    longitude: last,
+    bees_in: delta,
+    bees_out: delta,
+    hornet_count: max,
+    vision_fps: avg,
+    vision_latency_ms: avg
+  };
+
   const aggregatedData: Record<string, number> = {};
   Object.entries(bucketCache).forEach(([sensorType, data]) => {
-    if (data.values.length > 0) {
-      const sum = data.values.reduce((acc, val) => acc + val, 0);
-      aggregatedData[sensorType] = sum / data.values.length;
+    const rule = bucketRules[sensorType] || avg;
+    const value = rule(data.samples);
+    if (Number.isFinite(Number(value))) {
+      aggregatedData[sensorType] = Number(value);
     }
   });
 
@@ -215,6 +269,13 @@ const aggregateBucketData = (deviceId: string, bucketKey: string): BeehiveData |
     Object.entries(aggregatedData).map(([type, value]) => ({ type, value }))
   );
 };
+
+const aggregateBucketData = (deviceId: string, bucketKey: string): BeehiveData | null => {
+  const deviceCache = hourlyCache[deviceId];
+  return aggregateBucketCache(deviceId, bucketKey, deviceCache?.[bucketKey]);
+};
+
+export const __testAggregateBucketCache = aggregateBucketCache;
 
 const storeBucketData = async (deviceId: string, bucketKey: string) => {
   try {

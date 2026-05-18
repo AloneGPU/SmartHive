@@ -91,15 +91,19 @@ export const TrendCard = (props: {
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isMobile = useIsMobile();
+  const sourceData = Array.isArray(props.data) ? props.data : [];
+  const sourceComparisonData = Array.isArray(props.comparisonData)
+    ? props.comparisonData.filter((group): group is BeehiveData[] => Array.isArray(group))
+    : undefined;
   
   // 主数据处理
   const data = useMemo(
     () =>
-      props.data
+      sourceData
         .map(toPoint)
         .filter((p): p is TrendPoint => Boolean(p && hasAnyMainMetric(p)))
         .sort((a, b) => a.ts - b.ts),
-    [props.data]
+    [sourceData]
   );
   const dataSpan = useMemo(() => {
     if (data.length === 0) return { minTs: 0, maxTs: 0, spanMs: 0 };
@@ -114,10 +118,10 @@ export const TrendCard = (props: {
 
   // 比较数据处理：将其平移到主数据的时间线上，以便重叠
   const processedComparisonData = useMemo(() => {
-    if (!props.comparisonData || !props.mainRangeStart || !props.compareRangeStart) return [];
+    if (!sourceComparisonData || !props.mainRangeStart || !props.compareRangeStart) return [];
     
     const offset = props.mainRangeStart - props.compareRangeStart;
-    return props.comparisonData
+    return sourceComparisonData
       .map((group) =>
         group
           .map((d) => {
@@ -132,7 +136,7 @@ export const TrendCard = (props: {
           .filter((p): p is TrendPoint & { originalTs: number } => Boolean(p && hasAnyMainMetric(p)))
       )
       .filter((group) => group.length > 0);
-  }, [props.comparisonData, props.mainRangeStart, props.compareRangeStart]);
+  }, [sourceComparisonData, props.mainRangeStart, props.compareRangeStart]);
 
   const maxRenderPoints = isMobile ? 360 : 560;
   const displayData = useMemo(() => downsampleSequence(data, maxRenderPoints), [data, maxRenderPoints]);
@@ -480,7 +484,9 @@ export const TrendCard = (props: {
             )}
           </div>
           <div className="mt-1 text-xs text-gray-500">
-            {props.comparisonData ? '多时段数据叠加对比' : '箱内/箱外温湿度 + 重量复合趋势（按时间轴对齐）'}
+            {props.comparisonData
+              ? '多时段小时归档数据叠加对比'
+              : '小时归档趋势：温湿度均值、重量末值、进出蜂新增、胡蜂峰值'}
           </div>
           <div className="mt-1 text-[11px] text-gray-400">
             区间：{dataSpan.minTs ? formatFullLabel(dataSpan.minTs) : '--'} ~ {dataSpan.maxTs ? formatFullLabel(dataSpan.maxTs) : '--'}

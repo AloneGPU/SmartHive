@@ -578,6 +578,31 @@ export const fetchIotLatest = async (baseUrl: string, token: string, deviceId: s
   }));
 };
 
+export const fetchIotRealtimeLatest = async (
+  baseUrl: string,
+  token: string,
+  deviceId: string
+): Promise<IotSensorPoint[]> => {
+  const apiUrl = baseUrl || '/api';
+  const response = await authorizedFetch(`${apiUrl}/iot/realtime-latest?deviceId=${encodeURIComponent(deviceId)}`, token);
+  await assertResponseOk(response);
+  await assertJsonResponse(response, '实时遥测加载失败');
+  const event = await response.json();
+  const payload = event?.payload;
+  if (!payload || !payload.deviceId || !Array.isArray(payload.sensors)) return [];
+  const incomingDeviceId = String(payload.deviceId);
+  const timestamp = normalizeTimestamp(payload.timestamp || event.ts || Date.now());
+  return payload.sensors
+    .map((s: any) => ({
+      timestamp,
+      deviceId: incomingDeviceId,
+      sensorType: String(s?.type || ''),
+      value: toFiniteNumber(s?.value),
+      unit: s?.unit ? String(s.unit) : undefined
+    }))
+    .filter((p: IotSensorPoint) => p.sensorType && Number.isFinite(Number(p.value)));
+};
+
 export const fetchIotHistory = async (baseUrl: string, token: string, params: {
   deviceId?: string;
   sensorType?: string;

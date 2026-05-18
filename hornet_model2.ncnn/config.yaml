@@ -16,8 +16,8 @@ camera:
   backend: picamera2
 
 model:
-  param_path: ./model.ncnn.param
-  bin_path: ./model.ncnn.bin
+  param_path: /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model/model.ncnn.param
+  bin_path: /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model/model.ncnn.bin
   input_size: [320, 320]
   input_name: in0
   output_name: out0
@@ -59,8 +59,8 @@ mqtt:
 
 server_upload:
   enabled: true
-  url: http://127.0.0.1:3001/api/vision/frame
-  token: ""
+  url: http://121.196.155.132:3001/api/vision/frame
+  token: G1AUlrlDXiQMl6Kc
   device_id: pi5-vision-client
   interval_seconds: 0.5
   jpeg_quality: 80
@@ -68,8 +68,8 @@ server_upload:
 
 archive:
   enabled: true
-  beehive_url: http://127.0.0.1:3001/api/beehive
-  api_token: ""
+  beehive_url: http://121.196.155.132:3001
+  api_token: G1AUlrlDXiQMl6Kc
   interval_seconds: 3600
   align_to_hour: true
   timeout_seconds: 10.0
@@ -100,7 +100,7 @@ sensor:
   hx711_filter_window: 5
   dht_gpio_pin: 4
   dht_read_interval: 5.0
-  gps_port: /dev/ttyAMA4
+  gps_port: /dev/serial0
   gps_baud: 9600
   ir_enabled: true
   ir_outer_pin: 23

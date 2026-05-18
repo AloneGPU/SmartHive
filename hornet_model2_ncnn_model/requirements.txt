@@ -1,0 +1,14 @@
+paho-mqtt>=2.0.0
+pyyaml>=6.0
+pyserial>=3.5
+pynmea2>=1.18.0
+hx711-rpi-py>=1.0.0
+RPi.GPIO>=0.7.0
+adafruit-circuitpython-dht>=3.7.0
+adafruit-circuitpython-ssd1306>=2.12.0
+pillow>=10.0.0
+pigpio>=0.7.0
+gpiozero>=2.0.0
+rpi-lgpio>=0.6
+flask>=3.0.0
+waitress>=2.1.0

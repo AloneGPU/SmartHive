@@ -3,7 +3,6 @@ import { useQuery, type UseQueryResult, useQueryClient } from '@tanstack/react-q
 import { useAppContext } from '../context/AppContext';
 import { fetchHiveRangeData, fetchLiveHiveData, getFriendlyErrorMessage } from '../services/dataService';
 import { dataSyncService } from '../services/dataSyncService';
-import { realtimeHub } from '../services/realtimeHub';
 import type { BeehiveData } from '../types';
 
 // 数据同步配置
@@ -31,75 +30,38 @@ export const useHiveApi = () => {
   };
 };
 
-// 增强版实时数据Hook - 使用数据同步服务
+// 蜂箱「最新一条」：仅 React Query 轮询 /beehive/latest，不叠加 dataSync（避免内存缓存旧值 + 双重 HTTP）
 export const useLiveHiveQuery = (options: { 
   enabled?: boolean; 
   refetchInterval?: number;
   onError?: (message: string) => void;
 } = {}) => {
   const { baseUrl, token, isEnabled } = useHiveApi();
-  const [syncStatus, setSyncStatus] = useState<'syncing' | 'synced' | 'error'>('syncing');
-  const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
-  const unsubscribeRef = useRef<(() => void) | null>(null);
-  const queryClient = useQueryClient();
 
-  // 使用React Query作为基础
   const query = useQuery({
     queryKey: ['live', baseUrl, token],
     queryFn: () => fetchLiveHiveData(baseUrl, token),
     enabled: isEnabled && (options.enabled ?? true),
     refetchInterval: options.refetchInterval ?? SYNC_CONFIG.REALTIME_INTERVAL,
     refetchIntervalInBackground: true,
-    staleTime: SYNC_CONFIG.REALTIME_INTERVAL / 2,
+    staleTime: 0,
+    gcTime: 60_000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
-  // 集成实时数据同步
   useEffect(() => {
-    if (!isEnabled || !(options.enabled ?? true)) return;
+    if (query.isError && query.error) {
+      options.onError?.(getFriendlyErrorMessage(query.error, '实时蜂箱数据加载失败'));
+    }
+  }, [query.isError, query.error, options.onError]);
 
-    // 使用数据同步服务
-    unsubscribeRef.current = dataSyncService.subscribe<BeehiveData | null>(
-      'live-hive-data',
-      (data) => {
-        if (data && typeof data === 'object' && '_error' in (data as any)) {
-          setSyncStatus('error');
-          const err = data as any;
-          options.onError?.(String(err._message || '数据同步失败'));
-        } else {
-          setSyncStatus('synced');
-          setLastSyncTime(Date.now());
-          // 更新React Query缓存
-          queryClient.setQueryData(['live', baseUrl, token], data);
-        }
-      },
-      {
-        immediate: true,
-        fetchFn: () => fetchLiveHiveData(baseUrl, token),
-        interval: SYNC_CONFIG.REALTIME_INTERVAL,
-        validateFn: (data) => Boolean(data),
-      }
-    );
-
-    return () => {
-      unsubscribeRef.current?.();
-    };
-  }, [baseUrl, token, isEnabled, options.enabled, options.onError, queryClient]);
-
-  // 集成SSE实时更新
-  useEffect(() => {
-    if (!isEnabled || !(options.enabled ?? true)) return;
-
-    // SSE连接已经在useIotRealtime中处理
-    // 这里只需要定期刷新数据即可
-    const refreshInterval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['live', baseUrl, token] });
-      setLastSyncTime(Date.now());
-    }, SYNC_CONFIG.REALTIME_INTERVAL * 2);
-
-    return () => {
-      clearInterval(refreshInterval);
-    };
-  }, [baseUrl, token, isEnabled, options.enabled, queryClient]);
+  const lastSyncTime = query.dataUpdatedAt > 0 ? query.dataUpdatedAt : null;
+  const syncStatus: 'syncing' | 'synced' | 'error' = query.isError
+    ? 'error'
+    : query.isFetching && query.fetchStatus === 'fetching' && !query.data
+      ? 'syncing'
+      : 'synced';
 
   return {
     ...query,

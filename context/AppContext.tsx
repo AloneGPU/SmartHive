@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { BeehiveData, ConnectionStatus, AIAnalysisResult, LocationData, CustomAIConfig, HiveConfig } from '../types';
 import { fetchLiveHiveData, fetchHistoryData, reverseGeocode, getFriendlyErrorMessage } from '../services/dataService';
 import { analyzeHiveHealth } from '../services/qwenService';
@@ -71,6 +72,8 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const queryClient = useQueryClient();
+
   // Auth State
   const [auth, setAuth] = useState<{ isAuthenticated: boolean; role: 'user' | 'admin'; adminSessionToken?: string }>({
     isAuthenticated: false,
@@ -213,6 +216,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     handleDisconnect(); // Disconnect on logout
   };
 
+  const pickGeocodeAddress = (value: unknown, latitude: number, longitude: number): string => {
+    const fallback = `蜂箱位置 - ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+    if (typeof value === 'string') {
+      const t = value.trim();
+      return t || fallback;
+    }
+    if (Array.isArray(value)) {
+      const t = value.filter((v): v is string => typeof v === 'string').join(' ').trim();
+      return t || fallback;
+    }
+    return fallback;
+  };
+
   const resolveLocation = async (latitude: number, longitude: number) => {
     setLocation(prev => ({
       ...prev,
@@ -238,11 +254,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setLocation({
       latitude,
       longitude,
-      address: data.address || `蜂箱位置 - ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-      province: data.province,
-      city: data.city,
-      district: data.district,
-      road: data.road,
+      address: pickGeocodeAddress(data.address, latitude, longitude),
+      province: typeof data.province === 'string' ? data.province : undefined,
+      city: typeof data.city === 'string' ? data.city : undefined,
+      district: typeof data.district === 'string' ? data.district : undefined,
+      road: typeof data.road === 'string' ? data.road : undefined,
       source: data.source || 'backend',
       status: 'resolved',
       errorMessage: ''
@@ -260,6 +276,39 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       resolveLocation(hiveData.latitude, hiveData.longitude);
     }
   }, [hiveData?.latitude, hiveData?.longitude, aiConfig.apiBaseUrl, aiConfig.apiToken]);
+
+  // 与 useLiveHiveQuery（约 3s）共用 React Query 缓存：把最新一条同步进 hiveData，
+  // 以便逆地理与全局状态与「实时」卡片一致，避免详情页只用库表轮询的旧经纬度。
+  useEffect(() => {
+    if (connectionStatus !== 'connected' || !auth.isAuthenticated) return;
+    const base = aiConfig.apiBaseUrl || '/api';
+    const tok = aiConfig.apiToken;
+    if (!tok) return;
+
+    const applyLiveCache = (raw: BeehiveData | null | undefined) => {
+      if (!raw || typeof raw !== 'object') return;
+      setHiveData((prev) => {
+        const n = normalizeHiveData(raw);
+        if (!n) return prev;
+        if (!prev || n.timestamp >= prev.timestamp) return n;
+        return prev;
+      });
+    };
+
+    const onCache = (event: { type: string; query?: { queryKey: readonly unknown[]; state: { data: unknown } } }) => {
+      const q = event.query;
+      if (!q) return;
+      const k = q.queryKey;
+      if (!Array.isArray(k) || k.length < 3) return;
+      if (k[0] !== 'live' || k[1] !== base || k[2] !== tok) return;
+      if (event.type !== 'updated' && event.type !== 'observerResultsUpdated' && event.type !== 'added') return;
+      applyLiveCache(q.state.data as BeehiveData | null | undefined);
+    };
+
+    applyLiveCache(queryClient.getQueryData<BeehiveData | null>(['live', base, tok]));
+    const unsub = queryClient.getQueryCache().subscribe(onCache as (e: unknown) => void);
+    return () => unsub();
+  }, [connectionStatus, auth.isAuthenticated, aiConfig.apiBaseUrl, aiConfig.apiToken, queryClient]);
 
   const handleUpdateConfig = async (newConfig: CustomAIConfig) => {
     // 确保包含所有必需字段

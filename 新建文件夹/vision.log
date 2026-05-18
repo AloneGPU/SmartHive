@@ -1,0 +1,35 @@
+2026-05-02 22:19:40,651 INFO vision MainThread Initializing Vision Engine...
+2026-05-02 22:19:40,653 INFO vision MainThread Model loaded successfully from /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model
+2026-05-02 22:19:40,660 INFO vision MainThread VisionMQTT: 已连接 127.0.0.1:1883
+2026-05-02 22:19:40,661 INFO vision MainThread VisionDashboard started on port 5001
+2026-05-02 22:19:40,662 INFO vision uds-server UDS server listening on /tmp/pi5_vision.sock
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Can't connect to pigpio at localhost(8888)
+
+Did you start the pigpio daemon? E.g. sudo pigpiod
+
+Did you specify the correct Pi host/port in the environment
+variables PIGPIO_ADDR/PIGPIO_PORT?
+E.g. export PIGPIO_ADDR=soft, export PIGPIO_PORT=8888
+
+Did you specify the correct Pi host/port in the
+pigpio.pi() function? E.g. pigpio.pi('soft', 8888)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+2026-05-02 22:19:40,664 ERROR vision MainThread ServoController: Cannot connect to pigpiod. Please run: sudo systemctl start pigpiod
+[3:34:06.534577054] [71551] [1;32m INFO [1;37mCamera [1;34mcamera_manager.cpp:330 [0mlibcamera v0.5.2+99-bfd68f78
+[3:34:06.541599331] [71552] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:720 [0mlibpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+[3:34:06.544090757] [71552] [1;32m INFO [1;37mIPAProxy [1;34mipa_proxy.cpp:180 [0mUsing tuning file /usr/share/libcamera/ipa/rpi/pisp/ov5647.json
+[3:34:06.550930886] [71552] [1;32m INFO [1;37mCamera [1;34mcamera_manager.cpp:220 [0mAdding camera '/base/axi/pcie@1000120000/rp1/i2c@88000/ov5647@36' for pipeline handler rpi/pisp
+[3:34:06.551007701] [71552] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1179 [0mRegistered camera /base/axi/pcie@1000120000/rp1/i2c@88000/ov5647@36 to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_C0
+ * Serving Flask app 'vision_process'
+ * Debug mode: off
+[3:34:06.557878442] [71551] [1;32m INFO [1;37mCamera [1;34mcamera.cpp:1215 [0mconfiguring streams: (0) 640x480-BGR888/sRGB (1) 640x480-GBRG_PISP_COMP1/RAW
+[3:34:06.558008071] [71552] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1483 [0mSensor: /base/axi/pcie@1000120000/rp1/i2c@88000/ov5647@36 - Selected sensor format: 640x480-SGBRG10_1X10/RAW - Selected CFE format: 640x480-PC1g/RAW
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://10.111.235.114:5001
+Press CTRL+C to quit
+2026-05-02 22:19:40,695 INFO vision capture Camera capture started successfully
+2026-05-02 22:19:42,681 INFO vision MainThread === Vision Main Loop (Multi-Threaded) Running ===
+Loading /home/first/Desktop/yolov8/hornet_model2_ncnn_model/my_models/hornet_v1_ncnn_model for NCNN inference...

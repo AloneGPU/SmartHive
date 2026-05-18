@@ -59,28 +59,28 @@ export const writeConfig = (config: Config): void => {
 // 加载配置到环境变量
 export const loadConfigToEnv = (): void => {
   const config = readConfig();
-  if (config.gaodeApiKey) {
+  if (!process.env.GAODE_API_KEY && config.gaodeApiKey) {
     process.env.GAODE_API_KEY = config.gaodeApiKey;
   }
-  if (config.qwenApiKey) {
+  if (!process.env.QWEN_API_KEY && config.qwenApiKey) {
     process.env.QWEN_API_KEY = config.qwenApiKey;
   }
-  if (config.apiToken) {
+  if (!process.env.API_TOKEN && config.apiToken) {
     process.env.API_TOKEN = config.apiToken;
   }
-  if (config.corsOrigin) {
+  if (!process.env.CORS_ORIGIN && config.corsOrigin) {
     process.env.CORS_ORIGIN = config.corsOrigin;
   }
-  if (config.videoStreamUrl) {
+  if (!process.env.VIDEO_STREAM_URL && config.videoStreamUrl) {
     process.env.VIDEO_STREAM_URL = config.videoStreamUrl;
   }
-  if (config.videoStreamMode) {
+  if (!process.env.VIDEO_STREAM_MODE && config.videoStreamMode) {
     process.env.VIDEO_STREAM_MODE = config.videoStreamMode;
   }
-  if (config.videoStreamSource) {
+  if (!process.env.VIDEO_STREAM_SOURCE && config.videoStreamSource) {
     process.env.VIDEO_STREAM_SOURCE = config.videoStreamSource;
   }
-  if (config.visionDeviceId) {
+  if (!process.env.VISION_DEVICE_ID && config.visionDeviceId) {
     process.env.VISION_DEVICE_ID = config.visionDeviceId;
   }
 };

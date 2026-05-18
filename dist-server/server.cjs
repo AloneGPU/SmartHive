@@ -80648,28 +80648,28 @@ var writeConfig = (config2) => {
 };
 var loadConfigToEnv = () => {
   const config2 = readConfig();
-  if (config2.gaodeApiKey) {
+  if (!process.env.GAODE_API_KEY && config2.gaodeApiKey) {
     process.env.GAODE_API_KEY = config2.gaodeApiKey;
   }
-  if (config2.qwenApiKey) {
+  if (!process.env.QWEN_API_KEY && config2.qwenApiKey) {
     process.env.QWEN_API_KEY = config2.qwenApiKey;
   }
-  if (config2.apiToken) {
+  if (!process.env.API_TOKEN && config2.apiToken) {
     process.env.API_TOKEN = config2.apiToken;
   }
-  if (config2.corsOrigin) {
+  if (!process.env.CORS_ORIGIN && config2.corsOrigin) {
     process.env.CORS_ORIGIN = config2.corsOrigin;
   }
-  if (config2.videoStreamUrl) {
+  if (!process.env.VIDEO_STREAM_URL && config2.videoStreamUrl) {
     process.env.VIDEO_STREAM_URL = config2.videoStreamUrl;
   }
-  if (config2.videoStreamMode) {
+  if (!process.env.VIDEO_STREAM_MODE && config2.videoStreamMode) {
     process.env.VIDEO_STREAM_MODE = config2.videoStreamMode;
   }
-  if (config2.videoStreamSource) {
+  if (!process.env.VIDEO_STREAM_SOURCE && config2.videoStreamSource) {
     process.env.VIDEO_STREAM_SOURCE = config2.videoStreamSource;
   }
-  if (config2.visionDeviceId) {
+  if (!process.env.VISION_DEVICE_ID && config2.visionDeviceId) {
     process.env.VISION_DEVICE_ID = config2.visionDeviceId;
   }
 };
@@ -80677,6 +80677,7 @@ var loadConfigToEnv = () => {
 // services/realtimeHub.ts
 var RealtimeHub = class {
   clients = /* @__PURE__ */ new Map();
+  latestTelemetryByDevice = /* @__PURE__ */ new Map();
   maxClients = 100;
   heartbeatInterval = null;
   clientTimeout = 12e4;
@@ -80712,6 +80713,7 @@ var RealtimeHub = class {
     }
   }
   broadcast(event) {
+    this.rememberTelemetry(event);
     const body = `event: ${event.type}
 data: ${JSON.stringify(event)}
 
@@ -80734,6 +80736,19 @@ data: ${JSON.stringify(event)}
       this.removeClient(res);
     });
   }
+  latestTelemetry(deviceId) {
+    if (deviceId) {
+      return this.latestTelemetryByDevice.get(deviceId) || null;
+    }
+    const events = Array.from(this.latestTelemetryByDevice.values()).sort((a, b) => Number(b.ts || 0) - Number(a.ts || 0));
+    return events[0] || null;
+  }
+  rememberTelemetry(event) {
+    if (event.type !== "iot.telemetry") return;
+    const deviceId = String(event.payload?.deviceId || "").trim();
+    if (!deviceId) return;
+    this.latestTelemetryByDevice.set(deviceId, event);
+  }
   startHeartbeat() {
     this.heartbeatInterval = setInterval(() => {
       const now = Date.now();
@@ -80746,6 +80761,8 @@ data: ${JSON.stringify(event)}
         }
         try {
           res.write(": heartbeat\n\n");
+          res.write("event: ping\ndata: {}\n\n");
+          info.lastActivity = Date.now();
         } catch (error48) {
           console.error(`[RealtimeHub] \u5FC3\u8DF3\u53D1\u9001\u5931\u8D25: ${info.ip}`, error48);
           deadClients.push(res);
@@ -80872,7 +80889,6 @@ var storageBucketMinutesRaw = Number(process.env.MQTT_STORAGE_BUCKET_MINUTES || 
 var storageBucketMinutes = Number.isFinite(storageBucketMinutesRaw) ? Math.max(0, storageBucketMinutesRaw) : 60;
 var storageBucketMs = storageBucketMinutes > 0 ? storageBucketMinutes * 60 * 1e3 : 0;
 var lastPersistBucketBySensor = /* @__PURE__ */ new Map();
-var lastMirrorBucketByDevice = /* @__PURE__ */ new Map();
 var getStorageBucketMinutes = () => storageBucketMinutes;
 var bucketAt = (timestamp) => {
   if (storageBucketMs <= 0) return null;
@@ -80895,16 +80911,6 @@ var selectTelemetryPointsForPersistence = (points) => {
     selected.push(point);
   }
   return selected;
-};
-var shouldPersistMirrorForDevice = (deviceId, timestamp) => {
-  if (!deviceId) return false;
-  if (storageBucketMs <= 0) return true;
-  const bucket = bucketAt(timestamp);
-  if (bucket === null) return true;
-  const last = lastMirrorBucketByDevice.get(deviceId);
-  if (last === bucket) return false;
-  lastMirrorBucketByDevice.set(deviceId, bucket);
-  return true;
 };
 var buildIotDeviceStatus = (deviceId, statusRaw, timestamp, points) => ({
   deviceId,
@@ -81088,18 +81094,26 @@ var startMqttIngestService = () => {
     }));
     if (!isReplay) {
       const status = buildIotDeviceStatus(parsed.deviceId, parsed.status, parsed.timestamp, points.length);
-      const statusSaved = await upsertIotDeviceStatus(status);
-      if (!statusSaved) {
-        stats.lastError = `Failed to upsert device status for ${parsed.deviceId}`;
+      try {
+        const statusSaved = await upsertIotDeviceStatus(status);
+        if (!statusSaved) {
+          stats.lastError = `Failed to upsert device status for ${parsed.deviceId}`;
+        }
+      } catch (error48) {
+        stats.lastError = `Failed to upsert device status for ${parsed.deviceId}: ${error48 instanceof Error ? error48.message : String(error48)}`;
       }
     }
     const pointsToPersist = selectTelemetryPointsForPersistence(points);
     const skipped = points.length - pointsToPersist.length;
     if (pointsToPersist.length > 0) {
-      const inserted = await insertIotTelemetryBatch(pointsToPersist);
-      stats.persistedPoints += Math.max(0, inserted);
-      if (inserted <= 0) {
-        stats.lastError = `Failed to persist iot_telemetry points for ${parsed.deviceId}`;
+      try {
+        const inserted = await insertIotTelemetryBatch(pointsToPersist);
+        stats.persistedPoints += Math.max(0, inserted);
+        if (inserted <= 0) {
+          stats.lastError = `Failed to persist iot_telemetry points for ${parsed.deviceId}`;
+        }
+      } catch (error48) {
+        stats.lastError = `Failed to persist iot_telemetry points for ${parsed.deviceId}: ${error48 instanceof Error ? error48.message : String(error48)}`;
       }
     }
     if (skipped > 0) {
@@ -81110,9 +81124,8 @@ var startMqttIngestService = () => {
     if (!hourlyCache[parsed.deviceId][bucketKey]) hourlyCache[parsed.deviceId][bucketKey] = {};
     for (const sensor of parsed.sensors) {
       const byType = hourlyCache[parsed.deviceId][bucketKey];
-      if (!byType[sensor.type]) byType[sensor.type] = { values: [], timestamps: [] };
-      byType[sensor.type].values.push(sensor.value);
-      byType[sensor.type].timestamps.push(parsed.timestamp);
+      if (!byType[sensor.type]) byType[sensor.type] = { samples: [] };
+      byType[sensor.type].samples.push({ value: sensor.value, timestamp: parsed.timestamp });
     }
     console.log(`[MQTT] Received data from ${parsed.deviceId}, cached for hourly storage`);
     if (isReplay) {
@@ -81120,15 +81133,50 @@ var startMqttIngestService = () => {
     }
   });
 };
-var aggregateBucketData = (deviceId, bucketKey) => {
-  const deviceCache = hourlyCache[deviceId];
-  const bucketCache = deviceCache?.[bucketKey];
+var aggregateBucketCache = (deviceId, bucketKey, bucketCache) => {
   if (!bucketCache) return null;
+  const sortSamples = (samples) => samples.filter((s) => Number.isFinite(Number(s.value)) && Number.isFinite(Number(s.timestamp))).sort((a, b) => a.timestamp - b.timestamp);
+  const avg = (samples) => {
+    const values = samples.map((s) => Number(s.value)).filter(Number.isFinite);
+    if (values.length === 0) return void 0;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  };
+  const last = (samples) => {
+    const ordered = sortSamples(samples);
+    return ordered.length > 0 ? ordered[ordered.length - 1].value : void 0;
+  };
+  const max = (samples) => {
+    const values = samples.map((s) => Number(s.value)).filter(Number.isFinite);
+    return values.length > 0 ? Math.max(...values) : void 0;
+  };
+  const delta = (samples) => {
+    const ordered = sortSamples(samples);
+    if (ordered.length === 0) return void 0;
+    if (ordered.length === 1) return 0;
+    const first = ordered[0].value;
+    const lastValue = ordered[ordered.length - 1].value;
+    return Math.max(0, Math.round(lastValue - first));
+  };
+  const bucketRules = {
+    inside_temperature: avg,
+    inside_humidity: avg,
+    outside_temperature: avg,
+    outside_humidity: avg,
+    weight: last,
+    latitude: last,
+    longitude: last,
+    bees_in: delta,
+    bees_out: delta,
+    hornet_count: max,
+    vision_fps: avg,
+    vision_latency_ms: avg
+  };
   const aggregatedData = {};
   Object.entries(bucketCache).forEach(([sensorType, data]) => {
-    if (data.values.length > 0) {
-      const sum = data.values.reduce((acc, val) => acc + val, 0);
-      aggregatedData[sensorType] = sum / data.values.length;
+    const rule = bucketRules[sensorType] || avg;
+    const value = rule(data.samples);
+    if (Number.isFinite(Number(value))) {
+      aggregatedData[sensorType] = Number(value);
     }
   });
   const bucketStartTs = Number(bucketKey) * bucketMs;
@@ -81137,6 +81185,10 @@ var aggregateBucketData = (deviceId, bucketKey) => {
     bucketStartTs,
     Object.entries(aggregatedData).map(([type, value]) => ({ type, value }))
   );
+};
+var aggregateBucketData = (deviceId, bucketKey) => {
+  const deviceCache = hourlyCache[deviceId];
+  return aggregateBucketCache(deviceId, bucketKey, deviceCache?.[bucketKey]);
 };
 var storeBucketData = async (deviceId, bucketKey) => {
   try {
@@ -82111,13 +82163,33 @@ var processChatMessage = async (message, context) => {
   const sqlQuery = extractSQL(content);
   if (sqlQuery) {
     logger.info("api", "AI\u751F\u6210SQL\u67E5\u8BE2", { sql: sqlQuery.substring(0, 160) });
-    const queryResult = await aiQueryService.executeQuery(sqlQuery);
+    let queryResult = await aiQueryService.executeQuery(sqlQuery);
     if (!queryResult.success) {
-      return sanitizeAssistantAnswer([
-        "\u6211\u5DF2\u5C1D\u8BD5\u8C03\u53D6\u5386\u53F2\u6570\u636E\uFF0C\u4F46\u8FD9\u6B21\u67E5\u8BE2\u6CA1\u6709\u6210\u529F\uFF0C\u6240\u4EE5\u5F53\u524D\u4E0D\u80FD\u7ED9\u51FA\u53EF\u9760\u5206\u6790\u3002",
-        queryResult.error ? `\u539F\u56E0\uFF1A${queryResult.error}` : "",
-        "\u5EFA\u8BAE\u4F60\u628A\u65F6\u95F4\u8303\u56F4\u8BF4\u5F97\u66F4\u5177\u4F53\u4E00\u4E9B\uFF0C\u4F8B\u5982\u201C\u6700\u8FD124\u5C0F\u65F6\u201D\u201C\u672C\u5468\u201D\u6216\u201C\u6700\u8FD17\u5929\u201D\u3002"
-      ].filter(Boolean).join("\n"));
+      logger.info("api", "AI SQL \u9996\u6B21\u6267\u884C\u5931\u8D25\uFF0C\u5C1D\u8BD5\u4FEE\u6B63\u91CD\u8BD5", { error: queryResult.error });
+      const retryResult = await callQwenChat(
+        apiKey,
+        model,
+        [
+          { role: "system", content: buildPlannerPrompt(dbSchema) + "\n\n\u3010\u91CD\u8981\u3011\u4F60\u4E0A\u6B21\u751F\u6210\u7684 SQL \u6267\u884C\u5931\u8D25\uFF0C\u9519\u8BEF\u4FE1\u606F\u5982\u4E0B\u3002\u8BF7\u4E25\u683C\u53EA\u4F7F\u7528\u4E0A\u8FF0 Schema \u4E2D\u5217\u51FA\u7684 4 \u5F20\u8868\uFF08hive_data\u3001iot_telemetry\u3001iot_device_status\u3001vision_recognition\uFF09\uFF0C\u4E0D\u8981\u4F7F\u7528\u4EFB\u4F55\u5176\u4ED6\u8868\u540D\u3002\u53EA\u8F93\u51FA\u4FEE\u6B63\u540E\u7684 SQL \u4EE3\u7801\u5757\u3002" },
+          { role: "user", content: message },
+          { role: "assistant", content },
+          { role: "user", content: `\u4E0A\u6B21 SQL \u6267\u884C\u5931\u8D25\uFF1A${queryResult.error}
+\u8BF7\u4FEE\u6B63\u540E\u91CD\u65B0\u751F\u6210\u3002` }
+        ],
+        { temperature: 0.1, maxTokens: 1600 }
+      );
+      if (retryResult.ok) {
+        const retrySql = extractSQL(retryResult.content);
+        if (retrySql) {
+          logger.info("api", "AI\u4FEE\u6B63SQL\u67E5\u8BE2", { sql: retrySql.substring(0, 160) });
+          queryResult = await aiQueryService.executeQuery(retrySql);
+        }
+      }
+    }
+    if (!queryResult.success) {
+      return sanitizeAssistantAnswer(
+        "\u62B1\u6B49\uFF0C\u8FD9\u6B21\u67E5\u8BE2\u672A\u80FD\u6210\u529F\u3002\u8BF7\u5C1D\u8BD5\u6362\u4E00\u79CD\u95EE\u6CD5\uFF0C\u4F8B\u5982\u6307\u5B9A\u66F4\u5177\u4F53\u7684\u65F6\u95F4\u8303\u56F4\uFF08\u201D\u6700\u8FD124\u5C0F\u65F6\u201D\u201D\u672C\u5468\u201D\uFF09\u6216\u660E\u786E\u6307\u6807\u540D\u79F0\uFF08\u6E29\u5EA6\u3001\u6E7F\u5EA6\u3001\u91CD\u91CF\u7B49\uFF09\u3002"
+      );
     }
     const analysisResult = await callQwenChat(
       apiKey,
@@ -83203,6 +83275,38 @@ var getSystemConfigSnapshot = async () => {
     ).trim() || "pi5-vision-client"
   };
 };
+var persistVideoStreamConfig = async (config2) => {
+  const normalized = {
+    videoStreamUrl: config2.videoStreamUrl.trim(),
+    videoStreamMode: config2.videoStreamMode === "video" ? "video" : "mjpeg",
+    videoStreamSource: config2.videoStreamSource === "proxy" ? "proxy" : "direct",
+    visionDeviceId: (config2.visionDeviceId || "pi5-vision-client").trim() || "pi5-vision-client"
+  };
+  process.env.VIDEO_STREAM_URL = normalized.videoStreamUrl;
+  process.env.VIDEO_STREAM_MODE = normalized.videoStreamMode;
+  process.env.VIDEO_STREAM_SOURCE = normalized.videoStreamSource;
+  process.env.VISION_DEVICE_ID = normalized.visionDeviceId;
+  writeConfig(normalized);
+  let databasePersisted = true;
+  let databaseError = "";
+  try {
+    await Promise.all([
+      updateSystemConfig("video_stream_url", normalized.videoStreamUrl),
+      updateSystemConfig("video_stream_mode", normalized.videoStreamMode),
+      updateSystemConfig("video_stream_source", normalized.videoStreamSource),
+      updateSystemConfig("vision_device_id", normalized.visionDeviceId)
+    ]);
+  } catch (error48) {
+    databasePersisted = false;
+    databaseError = error48 instanceof Error ? error48.message : String(error48);
+    console.warn("[config] failed to persist video stream configuration to database:", error48);
+  }
+  return {
+    ...normalized,
+    databasePersisted,
+    databaseError
+  };
+};
 var app = (0, import_express.default)();
 var PORT = parseInt(process.env.PORT || "3001", 10);
 var LOGIN_RL_WINDOW_MS = 15 * 60 * 1e3;
@@ -83529,7 +83633,7 @@ app.post("/api/auth/login", (req, res) => {
         return res.status(401).json({ message: "API \u4EE4\u724C\u65E0\u6548" });
       }
     }
-    return res.json({ ok: true, role: "user" });
+    return res.json({ ok: true, role: "user", apiToken: apiTok || void 0 });
   }
   const adminPass = (process.env.ADMIN_PASSWORD || "").trim();
   if (!adminPass) {
@@ -83590,28 +83694,37 @@ app.get("/api/iot/stream", (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
   res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders?.();
-  const ping = setInterval(() => {
-    try {
-      res.write(`event: ping
-data: {"ts":${Date.now()}}
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  if (res.flushHeaders) {
+    res.flushHeaders();
+  }
+  const requestedDeviceId = typeof req.query.deviceId === "string" ? req.query.deviceId.trim() : "";
+  const latestTelemetry = realtimeHub.latestTelemetry(requestedDeviceId || void 0);
+  if (latestTelemetry) {
+    res.write(`event: ${latestTelemetry.type}
+data: ${JSON.stringify(latestTelemetry)}
 
 `);
-    } catch (error48) {
-      clearInterval(ping);
-      realtimeHub.removeClient(res);
-    }
-  }, 1e4);
-  req.on("close", () => {
-    clearInterval(ping);
+  }
+  const onClose = () => {
     realtimeHub.removeClient(res);
-  });
+  };
+  req.on("close", onClose);
+  req.on("error", onClose);
 });
 app.get("/api/iot/latest", verifyToken, async (req, res) => {
   const deviceId = String(req.query.deviceId || "");
   if (!deviceId) return res.status(400).json({ message: "deviceId is required" });
   const points = await fetchIotLatestByDevice(deviceId);
   return res.status(200).json(points);
+});
+app.get("/api/iot/realtime-latest", verifyToken, (req, res) => {
+  const deviceId = typeof req.query.deviceId === "string" ? req.query.deviceId.trim() : "";
+  const latestTelemetry = realtimeHub.latestTelemetry(deviceId || void 0);
+  if (!latestTelemetry) {
+    return res.status(200).json(null);
+  }
+  return res.status(200).json(latestTelemetry);
 });
 app.get("/api/iot/history", verifyToken, async (req, res) => {
   const deviceId = typeof req.query.deviceId === "string" ? req.query.deviceId : void 0;
@@ -83655,16 +83768,6 @@ app.post("/api/iot/ingest", verifyToken, async (req, res) => {
     unit: s.unit,
     qos: body.qos ?? 1
   }));
-  const status = buildIotDeviceStatus(body.deviceId, body.status, timestamp, points.length);
-  const statusSaved = await upsertIotDeviceStatus(status);
-  const pointsToPersist = selectTelemetryPointsForPersistence(points);
-  const inserted = pointsToPersist.length > 0 ? await insertIotTelemetryBatch(pointsToPersist) : 0;
-  const mirroredRecord = mirrorIotSensorsToBeehiveRecord(body.deviceId, timestamp, normalizedSensors);
-  let mirroredSaved = true;
-  const mirrorPersisted = Boolean(mirroredRecord && shouldPersistMirrorForDevice(body.deviceId, timestamp));
-  if (mirroredRecord && mirrorPersisted) {
-    mirroredSaved = await insertBeehiveData(mirroredRecord);
-  }
   realtimeHub.broadcast({
     type: "iot.telemetry",
     payload: {
@@ -83674,28 +83777,44 @@ app.post("/api/iot/ingest", verifyToken, async (req, res) => {
     },
     ts: Date.now()
   });
-  if (!statusSaved || pointsToPersist.length > 0 && inserted <= 0 || mirrorPersisted && !mirroredSaved) {
-    return res.status(503).json({
-      message: "Telemetry accepted but failed to persist reliably",
-      statusSaved,
-      inserted,
-      requestedPoints: points.length,
-      persistedPoints: pointsToPersist.length,
-      skippedByBucket: points.length - pointsToPersist.length,
-      mirroredSaved,
-      mirroredToBeehive: mirrorPersisted
-    });
-  }
+  const status = buildIotDeviceStatus(body.deviceId, body.status, timestamp, points.length);
+  const pointsToPersist = selectTelemetryPointsForPersistence(points);
+  void (async () => {
+    try {
+      const statusSaved = await upsertIotDeviceStatus(status);
+      if (!statusSaved) {
+        logger.warn("api", `/api/iot/ingest \u8BBE\u5907\u72B6\u6001\u672A\u5199\u5165\u6570\u636E\u5E93\uFF0C\u5B9E\u65F6\u63A8\u9001\u5DF2\u5B8C\u6210: ${body.deviceId}`);
+      }
+    } catch (error48) {
+      const message = error48 instanceof Error ? error48.message : String(error48);
+      logger.warn("api", `/api/iot/ingest \u8BBE\u5907\u72B6\u6001\u5199\u5165\u5931\u8D25\uFF0C\u5B9E\u65F6\u63A8\u9001\u4E0D\u53D7\u5F71\u54CD: ${message}`);
+    }
+    try {
+      const inserted = pointsToPersist.length > 0 ? await insertIotTelemetryBatch(pointsToPersist) : 0;
+      if (pointsToPersist.length > 0 && inserted <= 0) {
+        logger.warn("api", `/api/iot/ingest \u9065\u6D4B\u5386\u53F2\u672A\u5199\u5165\u6570\u636E\u5E93\uFF0C\u5B9E\u65F6\u63A8\u9001\u5DF2\u5B8C\u6210: ${body.deviceId}`);
+      }
+    } catch (error48) {
+      const message = error48 instanceof Error ? error48.message : String(error48);
+      logger.warn("api", `/api/iot/ingest \u9065\u6D4B\u5386\u53F2\u5199\u5165\u5931\u8D25\uFF0C\u5B9E\u65F6\u63A8\u9001\u4E0D\u53D7\u5F71\u54CD: ${message}`);
+    }
+  })();
   return res.status(201).json({
-    inserted,
+    accepted: true,
+    realtimePushed: true,
+    persistenceQueued: true,
     requestedPoints: points.length,
     persistedPoints: pointsToPersist.length,
-    skippedByBucket: points.length - pointsToPersist.length,
-    mirroredToBeehive: mirrorPersisted
+    skippedByBucket: points.length - pointsToPersist.length
   });
 });
 app.get("/api/iot/monitor", verifyToken, async (_req, res) => {
-  const statuses = await fetchIotDeviceStatuses();
+  let statuses = [];
+  try {
+    statuses = await fetchIotDeviceStatuses();
+  } catch (error48) {
+    logger.warn("api", `IoT \u8BBE\u5907\u72B6\u6001\u67E5\u8BE2\u5931\u8D25\uFF0C\u76D1\u63A7\u63A5\u53E3\u964D\u7EA7\u8FD4\u56DE MQTT/SSE \u72B6\u6001: ${error48 instanceof Error ? error48.message : String(error48)}`);
+  }
   return res.status(200).json({
     mqtt: getMqttIngestStats(),
     stream: realtimeHub.stats(),
@@ -84066,6 +84185,51 @@ app.get("/api/config", verifyToken, async (_req, res) => {
     });
   }
 });
+app.post("/api/device/video-stream", verifyToken, async (req, res) => {
+  try {
+    const body = req.body;
+    const deviceId = String(body.deviceId || process.env.VISION_DEVICE_ID || "pi5-vision-client").trim() || "pi5-vision-client";
+    const rawPath = typeof body.path === "string" && body.path.trim() ? body.path.trim() : "/stream";
+    const streamPath = rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
+    const streamUrl = (() => {
+      const direct = typeof body.streamUrl === "string" ? body.streamUrl.trim() : "";
+      if (direct) return direct;
+      const host = typeof body.host === "string" ? body.host.trim() : "";
+      const port = Number.isFinite(Number(body.port)) ? Number(body.port) : 5001;
+      if (!host) return "";
+      return `http://${host}:${port}${streamPath}`;
+    })();
+    if (!streamUrl) {
+      return res.status(400).json({ message: "streamUrl or host is required" });
+    }
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(streamUrl);
+    } catch {
+      return res.status(400).json({ message: "Invalid streamUrl" });
+    }
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return res.status(400).json({ message: "streamUrl must use http or https" });
+    }
+    const result = await persistVideoStreamConfig({
+      videoStreamUrl: parsedUrl.toString(),
+      videoStreamMode: body.mode === "video" ? "video" : "mjpeg",
+      videoStreamSource: body.source === "proxy" ? "proxy" : "direct",
+      visionDeviceId: deviceId
+    });
+    logger.info("api", `\u8BBE\u5907 ${deviceId} \u5DF2\u6CE8\u518C\u89C6\u9891\u6D41\u5730\u5740: ${result.videoStreamUrl}`);
+    return res.status(200).json({
+      ok: true,
+      ...result,
+      timestamp: Date.now()
+    });
+  } catch (error48) {
+    return res.status(500).json({
+      message: "Failed to register device video stream",
+      error: error48 instanceof Error ? error48.message : String(error48)
+    });
+  }
+});
 app.post("/api/config", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -84098,27 +84262,32 @@ app.post("/api/config", async (req, res) => {
       updates.push(updateSystemConfig("api_token", normalizedPayload.apiToken));
       process.env.API_TOKEN = normalizedPayload.apiToken;
     }
-    if (normalizedPayload.videoStreamUrl !== void 0) {
-      updates.push(updateSystemConfig("video_stream_url", normalizedPayload.videoStreamUrl));
-      process.env.VIDEO_STREAM_URL = normalizedPayload.videoStreamUrl;
+    const hasVideoConfig = normalizedPayload.videoStreamUrl !== void 0 || normalizedPayload.videoStreamMode !== void 0 || normalizedPayload.videoStreamSource !== void 0 || normalizedPayload.visionDeviceId !== void 0;
+    let videoDatabasePersisted = true;
+    let videoDatabaseError = "";
+    if (hasVideoConfig) {
+      const current = await getSystemConfigSnapshot();
+      const videoResult = await persistVideoStreamConfig({
+        videoStreamUrl: normalizedPayload.videoStreamUrl ?? current.videoStreamUrl,
+        videoStreamMode: normalizedPayload.videoStreamMode ?? (current.videoStreamMode === "video" ? "video" : "mjpeg"),
+        videoStreamSource: normalizedPayload.videoStreamSource ?? (current.videoStreamSource === "proxy" ? "proxy" : "direct"),
+        visionDeviceId: normalizedPayload.visionDeviceId ?? current.visionDeviceId
+      });
+      videoDatabasePersisted = videoResult.databasePersisted;
+      videoDatabaseError = videoResult.databaseError;
     }
-    if (normalizedPayload.videoStreamMode !== void 0) {
-      updates.push(updateSystemConfig("video_stream_mode", normalizedPayload.videoStreamMode));
-      process.env.VIDEO_STREAM_MODE = normalizedPayload.videoStreamMode;
+    const filePayload = { ...normalizedPayload };
+    if (hasVideoConfig) {
+      delete filePayload.videoStreamUrl;
+      delete filePayload.videoStreamMode;
+      delete filePayload.videoStreamSource;
+      delete filePayload.visionDeviceId;
     }
-    if (normalizedPayload.videoStreamSource !== void 0) {
-      updates.push(updateSystemConfig("video_stream_source", normalizedPayload.videoStreamSource));
-      process.env.VIDEO_STREAM_SOURCE = normalizedPayload.videoStreamSource;
-    }
-    if (normalizedPayload.visionDeviceId !== void 0) {
-      updates.push(updateSystemConfig("vision_device_id", normalizedPayload.visionDeviceId));
-      process.env.VISION_DEVICE_ID = normalizedPayload.visionDeviceId;
-    }
-    writeConfig(normalizedPayload);
+    writeConfig(filePayload);
     if (normalizedPayload.corsOrigin !== void 0) {
       process.env.CORS_ORIGIN = normalizedPayload.corsOrigin;
     }
-    let databasePersisted = true;
+    let databasePersisted = videoDatabasePersisted;
     let databaseError = "";
     try {
       await Promise.all(updates);
@@ -84126,6 +84295,9 @@ app.post("/api/config", async (req, res) => {
       databasePersisted = false;
       databaseError = error48 instanceof Error ? error48.message : String(error48);
       console.warn("[config] failed to persist configuration to database, config.json fallback remains active:", error48);
+    }
+    if (videoDatabaseError && !databaseError) {
+      databaseError = videoDatabaseError;
     }
     res.status(200).json({
       message: databasePersisted ? "Configuration updated successfully" : "Configuration saved to config.json; database persistence failed",
@@ -84603,9 +84775,12 @@ app.get("/api/geocode/reverse", verifyToken, async (req, res) => {
     const city = Array.isArray(addressInfo.city) ? "" : addressInfo.city || addressInfo.province || "";
     const district = addressInfo.district || "";
     const road = addressInfo.township || addressInfo.streetNumber?.street || "";
-    const address = data?.regeocode?.formatted_address || [province, city, district, road].filter(Boolean).join(" ");
+    const rawFormatted = data?.regeocode?.formatted_address;
+    const formatted = typeof rawFormatted === "string" ? rawFormatted.trim() : Array.isArray(rawFormatted) ? rawFormatted.filter((v) => typeof v === "string").join(" ").trim() : "";
+    const fromParts = [province, city, district, road].filter(Boolean).join(" ").trim();
+    const address = formatted || fromParts || `\u8702\u7BB1\u4F4D\u7F6E - ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
     const payload = {
-      address: address || `\u8702\u7BB1\u4F4D\u7F6E - ${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+      address,
       province,
       city,
       district,
@@ -84709,9 +84884,9 @@ var validateEnvironment = () => {
 var startServer = async () => {
   try {
     validateEnvironment();
+    startMqttIngestService();
     try {
       await initializeDatabase();
-      startMqttIngestService();
     } catch (dbError) {
       console.warn("Warning: Database initialization failed. The server will start, but database features may not work.");
       console.warn("Error details:", dbError instanceof Error ? dbError.message : String(dbError));

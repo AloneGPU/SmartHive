@@ -21,35 +21,40 @@ export const Login: React.FC<LoginProps> = ({ onLogin, apiBaseUrl = '/api' }) =>
     setLoading(true);
 
     try {
-      if (role === 'user') {
-        onLogin('user');
-        setLoading(false);
-        return;
-      }
-
+      // 普通用户和管理员都调用后端登录接口
       const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'admin', password: password.trim() })
+        body: JSON.stringify(
+          role === 'admin'
+            ? { role: 'admin', password: password.trim() }
+            : { role: 'user' }
+        )
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 429) {
           setError(typeof data.message === 'string' ? data.message : '请求过于频繁，请稍后再试');
         } else {
-          setError(typeof data.message === 'string' ? data.message : '密码错误，请重新输入');
+          setError(typeof data.message === 'string' ? data.message : '登录失败，请重试');
         }
         setLoading(false);
         return;
       }
+
       const token = typeof data.apiToken === 'string' ? data.apiToken.trim() : '';
       const adminSessionToken = typeof data.adminSessionToken === 'string' ? data.adminSessionToken.trim() : '';
-      if (!token || !adminSessionToken) {
-        setError('服务器配置异常，请联系管理员');
-        setLoading(false);
-        return;
+
+      if (role === 'admin') {
+        if (!token) {
+          setError('服务器配置异常，请联系管理员');
+          setLoading(false);
+          return;
+        }
+        onLogin('admin', token, adminSessionToken || undefined);
+      } else {
+        onLogin('user', token || undefined);
       }
-      onLogin('admin', token, adminSessionToken);
     } catch {
       setError('网络连接失败，请检查网络后重试');
     } finally {

@@ -2,6 +2,9 @@
 """
 Raspberry Pi dual DHT22(GPIO4 + GPIO17) -> MQTT -> SmartHive backend test publisher.
 
+（说明）正式蜂箱「数据传输」主程序在仓库 ``hornet_model2_ncnn_model/transfer_process.py``，
+由 ``launch.sh`` 与 ``sensor_process.py`` / ``vision_process.py`` 一起跑；本文件仅作独立 MQTT 联调/演示。
+
 Default behavior:
 - Read inside DHT22 from BCM GPIO4
 - Read outside DHT22 from BCM GPIO17
@@ -12,13 +15,11 @@ Dependencies:
   pip install adafruit-circuitpython-dht paho-mqtt
   sudo apt install libgpiod2
 
+默认连接信息写在下方常量里，直接 ``python3 hardware/pi_dht22_mqtt_test.py`` 即可运行；
+仍可用命令行参数覆盖任意一项。
+
 Example:
-  python3 hardware/pi_dht22_mqtt_test.py \
-    --host 192.168.1.100 \
-    --port 1883 \
-    --device-id pi5-dht22-test \
-    --username smarthive_iot \
-    --password your_password
+  python3 hardware/pi_dht22_mqtt_test.py --once
 """
 
 from __future__ import annotations
@@ -57,6 +58,14 @@ except ImportError as exc:  # pragma: no cover - runtime dependency
 LOGGER = logging.getLogger("pi-dht22-mqtt-test")
 STOP = False
 
+# ---------- MQTT / 设备：按需改这里（勿提交到公开仓库时可改用本地私有库）----------
+MQTT_HOST = "121.196.155.132"
+MQTT_PORT = 1883
+MQTT_USERNAME = "123456"
+MQTT_PASSWORD = "226886"
+# 须与网页「IoT 设备 ID / visionDeviceId」一致，否则总览实时面板可能收不到 SSE
+MQTT_DEVICE_ID = "pi5-dht22-test"
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -64,13 +73,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--host",
-        default="121.196.155.132",
-        help="MQTT broker host or IP",
+        default=MQTT_HOST,
+        help="MQTT broker host or IP（默认见文件顶部 MQTT_HOST）",
     )
-    parser.add_argument("--port", type=int, default=1883, help="MQTT broker port")
-    parser.add_argument("--username", default="123456", help="MQTT username")
-    parser.add_argument("--password", default="226886", help="MQTT password")
-    parser.add_argument("--device-id", default="pi5-dht22-test", help="SmartHive deviceId")
+    parser.add_argument("--port", type=int, default=MQTT_PORT, help="MQTT broker port")
+    parser.add_argument("--username", default=MQTT_USERNAME, help="MQTT 用户名（默认见 MQTT_USERNAME）")
+    parser.add_argument("--password", default=MQTT_PASSWORD, help="MQTT 密码（默认见 MQTT_PASSWORD）")
+    parser.add_argument("--device-id", default=MQTT_DEVICE_ID, help="SmartHive deviceId（默认见 MQTT_DEVICE_ID）")
     parser.add_argument("--client-id", default="", help="MQTT client id")
     parser.add_argument(
         "--topic",

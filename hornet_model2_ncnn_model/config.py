@@ -184,11 +184,12 @@ class SensorConfig:
     ir_debounce_ms: int = 30      # Debounce time in milliseconds
     ir_direction_window_ms: int = 500  # Max time window for direction detection (ms)
     
-    # 加湿器模块配置（低电平触发，识别到胡蜂时启动）
+    # 加湿器模块配置（高电平触发，识别到胡蜂时启动）
     humidifier_enabled: bool = True
     humidifier_gpio_pin: int = 25   # 加湿器控制引脚
-    humidifier_active_low: bool = True  # 低电平触发
+    humidifier_active_low: bool = False  # False=高电平触发，True=低电平触发
     humidifier_trigger_duration_ms: int = 30000  # 触发持续时间（毫秒），默认30秒
+    humidifier_cooldown_seconds: float = 10.0  # 关闭后的冷却时间（秒），默认10秒
     
     # OLED显示屏配置（SSD1306驱动，0.96寸，4针I2C接口）
     oled_enabled: bool = True
@@ -201,14 +202,17 @@ class SensorConfig:
 @dataclass
 class ServoConfig:
     enabled: bool = False
+    driver: str = "auto"  # auto=pigpio优先失败后gpiozero；pigpio/gpiozero=指定驱动
     gpio_pin: int = 18
     pwm_frequency: int = 50
-    pulse_min_us: int = 500
-    pulse_max_us: int = 2500
-    angle_min: float = 0.0
-    angle_max: float = 180.0
+    pulse_min_us: int = 1000
+    pulse_max_us: int = 2000
+    angle_min: float = 10.0
+    angle_max: float = 170.0
     angle_center: float = 90.0
-    scan_speed_dps: float = 30.0
+    scan_speed_dps: float = 12.0
+    scan_step_degrees: float = 2.0
+    scan_step_interval_seconds: float = 0.12
     lock_lost_seconds: float = 2.0
     track_deadzone_px: int = 40
     track_gain: float = 0.05
@@ -280,7 +284,15 @@ class RuntimeConfig:
         cfg.watchdog = _merge(cfg.watchdog, "watchdog")
         cfg.logging = _merge(cfg.logging, "logging")
         cfg.visualization = _merge(cfg.visualization, "visualization")
-        cfg.sensor = _merge(cfg.sensor, "sensor")
+        # 兼容旧版 yaml：dht_gpio_pin → dht_inside_gpio_pin（否则 SensorConfig 会报 unexpected keyword）
+        if "sensor" in data and isinstance(data["sensor"], dict):
+            sd = {**data["sensor"]}
+            if "dht_gpio_pin" in sd:
+                legacy = sd.pop("dht_gpio_pin")
+                sd.setdefault("dht_inside_gpio_pin", legacy)
+            cfg.sensor = type(cfg.sensor)(**{**cfg.sensor.__dict__, **sd})
+        else:
+            cfg.sensor = _merge(cfg.sensor, "sensor")
         cfg.servo = _merge(cfg.servo, "servo")
         cfg.diagnostics = _merge(cfg.diagnostics, "diagnostics")
         if "uds_path" in data:

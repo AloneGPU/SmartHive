@@ -6,7 +6,7 @@ Responsibilities:
   - Read HX711 scale (with median filtering)
   - Read GPS NMEA data
   - IR bee counter (GPIO interrupt mode)
-  - Humidifier control (GPIO25, active-low, triggered by hornet detection via MQTT)
+  - Humidifier control (GPIO25, triggered by hornet detection via MQTT)
   - OLED display (SSD1306, I2C, 128x64)
   - Write sampling snapshots to SharedSensorState
   - Push telemetry via MQTT every N seconds
@@ -19,7 +19,7 @@ Fix log (2026-04-03):
   [BUG-3] MQTT payload 字段名用 temperature/humidity 而非 in_temp/in_humi，
            后端 dataMappingValidator 不识别 → 改为与文档一致的字段名
   [BUG-4] HourlyArchiver 只聚合 temp/humi，外部温湿度完全丢失 → 补全四路温湿度
-  [FEAT-1] 新增 HumidifierController：胡蜂检测时触发 GPIO25（低电平30秒），5分钟冷却
+  [FEAT-1] 新增 HumidifierController：胡蜂检测时触发 GPIO25（高电平30秒）
   [FEAT-2] 新增 OLEDDisplayService：每秒刷新 SSD1306 显示蜂箱数据
   [FEAT-3] sensor_process 通过 MQTT 订阅 pi5/vision/result 以获取 hornet_count，
            用于触发加湿器
@@ -70,13 +70,20 @@ except Exception:
 
 # OLED 依赖（adafruit-circuitpython-ssd1306 + pillow）
 try:
-    import board as _oled_board
     import busio
     import adafruit_ssd1306
     from PIL import Image, ImageDraw, ImageFont
     _OLED_AVAILABLE = True
 except Exception:
     _OLED_AVAILABLE = False
+
+# IR传感器依赖（gpiozero）
+try:
+    from gpiozero import DigitalInputDevice
+    _GPIOZERO_AVAILABLE = True
+except Exception:
+    DigitalInputDevice = None
+    _GPIOZERO_AVAILABLE = False
 
 
 # ------------------------------------------------------------------ #
@@ -112,6 +119,7 @@ class SharedSensorState:
         self.weight_updated_at: float = 0.0
         self.gps_updated_at: float = 0.0
         self.vision_updated_at: float = 0.0
+        self.last_hornet_seen_at: float = 0.0
 
     def update_sensors(self, **kwargs: Any) -> None:
         with self._lock:
@@ -134,6 +142,12 @@ class SharedSensorState:
                         touched_gps = True
                     elif k in ("hornet_count", "fps", "latency_ms"):
                         touched_vision = True
+                    if k == "hornet_count":
+                        try:
+                            if int(v) > 0:
+                                self.last_hornet_seen_at = now
+                        except Exception:
+                            pass
             if touched_inside:
                 self.inside_updated_at = now
             if touched_outside:
@@ -156,6 +170,7 @@ class SharedSensorState:
                 "lat": self.lat, "lon": self.lon,
                 "hornet_count": self.hornet_count,
                 "fps": self.fps, "latency_ms": self.latency_ms,
+                "last_hornet_seen_at": self.last_hornet_seen_at,
                 "inside_updated_at": self.inside_updated_at,
                 "outside_updated_at": self.outside_updated_at,
                 "weight_updated_at": self.weight_updated_at,
@@ -178,6 +193,7 @@ class SensorReader:
         self._stop = threading.Event()
         self._thread: Optional[threading.Thread] = None
         self._weight_buf: List[float] = []
+        self._hx711_error_count = 0
         # [BUG-2 FIX] 用独立的 IR 锁，不复用 state._lock，避免嵌套死锁
         self._ir_lock = threading.Lock()
         self._ir_outer_ts: Optional[float] = None
@@ -221,22 +237,39 @@ class SensorReader:
     def _init_hx711(self) -> Any:
         if not self._cfg.hx711_enabled or _HX711 is None:
             if self._cfg.hx711_enabled:
-                self._logger.warning("SensorReader: hx711 library not installed, weight unavailable")
+                self._logger.warning(
+                    "SensorReader: hx711 library not installed, weight unavailable. "
+                    "Install with: pip install hx711-rpi-py"
+                )
             return None
         try:
-            hx = _HX711(dout_pin=self._cfg.hx711_dout_pin, pd_sck_pin=self._cfg.hx711_sck_pin)
-            hx.set_reading_format("MSB", "MSB")
-            hx.set_reference_unit(self._cfg.hx711_reference_unit)
-            hx.reset()
-            if self._cfg.hx711_tare_on_start:
+            try:
+                hx = _HX711(dout_pin=self._cfg.hx711_dout_pin, pd_sck_pin=self._cfg.hx711_sck_pin)
+            except TypeError:
+                hx = _HX711(self._cfg.hx711_dout_pin, self._cfg.hx711_sck_pin)
+
+            if hasattr(hx, "set_reading_format"):
+                hx.set_reading_format("MSB", "MSB")
+            if hasattr(hx, "set_reference_unit"):
+                hx.set_reference_unit(self._cfg.hx711_reference_unit)
+            if hasattr(hx, "reset"):
+                hx.reset()
+            if self._cfg.hx711_tare_on_start and hasattr(hx, "tare"):
                 self._logger.info("SensorReader: HX711 归零中...")
                 hx.tare()
                 self._logger.info("SensorReader: HX711 归零完成")
-            self._logger.info("SensorReader: HX711初始化成功 DOUT=GPIO%d SCK=GPIO%d",
-                              self._cfg.hx711_dout_pin, self._cfg.hx711_sck_pin)
+            self._logger.info(
+                "SensorReader: HX711初始化成功 DOUT=GPIO%d SCK=GPIO%d reference_unit=%.4f",
+                self._cfg.hx711_dout_pin,
+                self._cfg.hx711_sck_pin,
+                float(self._cfg.hx711_reference_unit),
+            )
             return hx
         except Exception as e:
-            self._logger.warning("SensorReader: HX711初始化失败: %s", e)
+            self._logger.warning(
+                "SensorReader: HX711初始化失败: %s。请检查依赖、DOUT/SCK接线、供电和运行权限",
+                e,
+            )
             return None
 
     # ---- GPS Init ----
@@ -257,21 +290,35 @@ class SensorReader:
     def _init_ir(self) -> bool:
         if not self._cfg.ir_enabled:
             return False
+        if not _GPIOZERO_AVAILABLE:
+            self._logger.warning("SensorReader: IR初始化失败: gpiozero库未安装")
+            return False
+
         try:
-            import RPi.GPIO as GPIO  # type: ignore
-            self._GPIO = GPIO
-            GPIO.setmode(GPIO.BCM)
-            pull = GPIO.PUD_UP if self._cfg.ir_active_low else GPIO.PUD_DOWN
-            GPIO.setup(self._cfg.ir_outer_pin, GPIO.IN, pull_up_down=pull)
-            GPIO.setup(self._cfg.ir_inner_pin, GPIO.IN, pull_up_down=pull)
-            edge = GPIO.FALLING if self._cfg.ir_active_low else GPIO.RISING
-            bouncetime = max(10, int(self._cfg.ir_debounce_ms))
-            GPIO.add_event_detect(self._cfg.ir_outer_pin, edge,
-                                  callback=self._on_outer_triggered, bouncetime=bouncetime)
-            GPIO.add_event_detect(self._cfg.ir_inner_pin, edge,
-                                  callback=self._on_inner_triggered, bouncetime=bouncetime)
-            self._logger.info("SensorReader: IR初始化成功 outer=GPIO%d inner=GPIO%d active_low=%s",
-                              self._cfg.ir_outer_pin, self._cfg.ir_inner_pin, self._cfg.ir_active_low)
+            # Debounce time in seconds
+            self._ir_debounce_time = self._cfg.ir_debounce_ms / 1000.0
+            self._single_sensor_trigger_count = 0
+            self._dual_sensor_trigger_count = 0
+
+            # GPIO23 - outer sensor (towards outside)
+            # pull_up=False + when_activated: 与测试代码一致，传感器触发时信号变高
+            self._counter_outer = DigitalInputDevice(
+                self._cfg.ir_outer_pin,
+                pull_up=False
+            )
+            self._counter_outer_last_time = 0
+            self._counter_outer.when_activated = self._on_outer_triggered_gpiozero
+
+            # GPIO24 - inner sensor (towards inside)
+            self._counter_inner = DigitalInputDevice(
+                self._cfg.ir_inner_pin,
+                pull_up=False
+            )
+            self._counter_inner_last_time = 0
+            self._counter_inner.when_activated = self._on_inner_triggered_gpiozero
+
+            self._logger.info("SensorReader: IR初始化成功 outer=GPIO%d inner=GPIO%d pull_up=False when_activated",
+                              self._cfg.ir_outer_pin, self._cfg.ir_inner_pin)
             return True
         except Exception as e:
             self._logger.warning("SensorReader: IR初始化失败: %s", e)
@@ -279,15 +326,17 @@ class SensorReader:
 
     def _cleanup_ir(self) -> None:
         try:
-            GPIO = self._GPIO
-            if GPIO is not None:
-                GPIO.remove_event_detect(self._cfg.ir_outer_pin)
-                GPIO.remove_event_detect(self._cfg.ir_inner_pin)
-                GPIO.cleanup([self._cfg.ir_outer_pin, self._cfg.ir_inner_pin])
+            counter_outer = getattr(self, '_counter_outer', None)
+            if counter_outer is not None:
+                counter_outer.close()
+            counter_inner = getattr(self, '_counter_inner', None)
+            if counter_inner is not None:
+                counter_inner.close()
+            self._logger.debug("SensorReader: IR已清理")
         except Exception:
             pass
 
-    # ---- IR Callbacks (BUG-2 FIX: 使用独立 IR 锁，不嵌套 state._lock) ----
+    # ---- IR Callbacks (使用独立 IR 锁，不嵌套 state._lock) ----
 
     def _on_outer_triggered(self, channel: int) -> None:
         now_ms = time.monotonic() * 1000
@@ -301,52 +350,129 @@ class SensorReader:
             self._ir_inner_ts = now_ms
             self._check_direction_locked()
 
-    def _check_direction_locked(self) -> None:
-        """必须在 _ir_lock 持有期间调用。检查方向后写 state（state 有自己的锁）。"""
+    # gpiozero 风格回调（无参数）— 使用方向检测 + 单传感器回退
+    def _on_outer_triggered_gpiozero(self) -> None:
+        now_ms = time.monotonic() * 1000
+        now_s = time.time()
+        # 简单去抖
+        if (now_s - self._counter_outer_last_time) < self._ir_debounce_time:
+            return
+        self._counter_outer_last_time = now_s
+        self._logger.debug("IR: 外侧传感器触发")
+        with self._ir_lock:
+            self._ir_outer_ts = now_ms
+            self._check_direction_locked(now_ms, source="outer")
+
+    def _on_inner_triggered_gpiozero(self) -> None:
+        now_ms = time.monotonic() * 1000
+        now_s = time.time()
+        if (now_s - self._counter_inner_last_time) < self._ir_debounce_time:
+            return
+        self._counter_inner_last_time = now_s
+        self._logger.debug("IR: 内侧传感器触发")
+        with self._ir_lock:
+            self._ir_inner_ts = now_ms
+            self._check_direction_locked(now_ms, source="inner")
+
+    def _check_direction_locked(self, now_ms: float = 0, source: str = "") -> None:
+        """必须在 _ir_lock 持有期间调用。检查方向后写 state（state 有自己的锁）。
+        如果只有一个传感器工作，500ms 内无另一传感器触发则单传感器计数。"""
         outer = self._ir_outer_ts
         inner = self._ir_inner_ts
-        if outer is None or inner is None:
-            return
-        diff = abs(inner - outer)
-        if diff > self._cfg.ir_direction_window_ms:
-            self._ir_outer_ts = None
-            self._ir_inner_ts = None
-            return
-        if outer < inner:
-            # 外侧先触发 → 蜜蜂进入
-            with self._state._lock:
-                self._state.in_count += 1
-                total = self._state.in_count
-            if self._diag.enabled:
-                self._logger.info("[DIAG][IR] 蜜蜂进入 total_in=%d", total)
+
+        # 双传感器都触发了 → 方向检测
+        if outer is not None and inner is not None:
+            diff = abs(inner - outer)
+            if diff <= self._cfg.ir_direction_window_ms:
+                if outer < inner:
+                    with self._state._lock:
+                        self._state.in_count += 1
+                        total = self._state.in_count
+                    self._logger.info("IR: 蜜蜂进入 total_in=%d (双传感器)", total)
+                else:
+                    with self._state._lock:
+                        self._state.out_count += 1
+                        total = self._state.out_count
+                    self._logger.info("IR: 蜜蜂离开 total_out=%d (双传感器)", total)
+                self._dual_sensor_trigger_count += 1
+                self._ir_outer_ts = None
+                self._ir_inner_ts = None
+                return
             else:
-                self._logger.debug("IR: 蜜蜂进入 total_in=%d", total)
-        else:
-            # 内侧先触发 → 蜜蜂离开
-            with self._state._lock:
-                self._state.out_count += 1
-                total = self._state.out_count
-            if self._diag.enabled:
-                self._logger.info("[DIAG][IR] 蜜蜂离开 total_out=%d", total)
-            else:
-                self._logger.debug("IR: 蜜蜂离开 total_out=%d", total)
-        self._ir_outer_ts = None
-        self._ir_inner_ts = None
+                # 超时，清除旧的时间戳
+                self._ir_outer_ts = None
+                self._ir_inner_ts = None
+                return
+
+        # 只有一个传感器触发 → 设置定时器，如果另一个不触发则单传感器计数
+        if now_ms > 0:
+            # 延迟检查：如果在 direction_window 内另一个传感器没触发，就单传感器计数
+            threading.Timer(
+                self._cfg.ir_direction_window_ms / 1000.0,
+                self._single_sensor_fallback,
+                args=(source,)
+            ).start()
+
+    def _single_sensor_fallback(self, source: str) -> None:
+        """单传感器回退：如果方向检测窗口内只有一个传感器触发，直接计数。"""
+        with self._ir_lock:
+            # 检查是否已经被双传感器逻辑处理
+            if source == "outer" and self._ir_outer_ts is not None:
+                self._ir_outer_ts = None
+                with self._state._lock:
+                    self._state.in_count += 1
+                    total = self._state.in_count
+                self._single_sensor_trigger_count += 1
+                self._logger.info("IR: 蜜蜂通过(单传感器-外侧) total_in=%d", total)
+            elif source == "inner" and self._ir_inner_ts is not None:
+                self._ir_inner_ts = None
+                with self._state._lock:
+                    self._state.out_count += 1
+                    total = self._state.out_count
+                self._single_sensor_trigger_count += 1
+                self._logger.info("IR: 蜜蜂通过(单传感器-内侧) total_out=%d", total)
+
+        # 每100次触发输出一次诊断
+        total_triggers = self._single_sensor_trigger_count + self._dual_sensor_trigger_count
+        if total_triggers > 0 and total_triggers % 100 == 0:
+            self._logger.warning(
+                "IR诊断: 单传感器=%d 双传感器=%d (如果单传感器远多于双传感器，请检查GPIO%d接线)",
+                self._single_sensor_trigger_count, self._dual_sensor_trigger_count,
+                self._cfg.ir_inner_pin
+            )
 
     # ---- HX711 Read (Median Filter) ----
 
     def _read_weight(self, hx: Any) -> Optional[float]:
         try:
-            raw = hx.get_weight(5)
-            hx.power_down()
-            hx.power_up()
+            if hasattr(hx, "get_weight"):
+                raw = hx.get_weight(5)
+            elif hasattr(hx, "get_weight_mean"):
+                raw = hx.get_weight_mean(5)
+            else:
+                raise AttributeError("HX711 object has no get_weight/get_weight_mean method")
+
+            if isinstance(raw, (list, tuple)):
+                if not raw:
+                    return None
+                raw = sorted(float(x) for x in raw)[len(raw) // 2]
+            if raw is None:
+                return None
+
+            if hasattr(hx, "power_down"):
+                hx.power_down()
+            if hasattr(hx, "power_up"):
+                hx.power_up()
             window = max(1, self._cfg.hx711_filter_window)
             self._weight_buf.append(float(raw))
             if len(self._weight_buf) > window:
                 self._weight_buf.pop(0)
-            return max(0.0, round(sorted(self._weight_buf)[len(self._weight_buf) // 2], 1))
+            self._hx711_error_count = 0
+            return max(0.0, round(sorted(self._weight_buf)[len(self._weight_buf) // 2], 2))
         except Exception as e:
-            self._logger.debug("SensorReader: HX711读取异常: %s", e)
+            self._hx711_error_count += 1
+            if self._hx711_error_count <= 3 or self._hx711_error_count % 60 == 0:
+                self._logger.warning("SensorReader: HX711读取异常(%d): %s", self._hx711_error_count, e)
             return None
 
     # ---- Main Worker Loop ----
@@ -403,8 +529,18 @@ class SensorReader:
             # [BUG-1 FIX] 外部DHT22使用独立计时器 last_dht_outside
             if dht_outside is not None and (now - last_dht_outside) >= self._cfg.dht_read_interval:
                 try:
-                    t_out = dht_outside.temperature
-                    h_out = dht_outside.humidity
+                    # 增加重试机制，最多重试2次
+                    t_out = None
+                    h_out = None
+                    for retry in range(3):
+                        try:
+                            t_out = dht_outside.temperature
+                            h_out = dht_outside.humidity
+                            if t_out is not None and h_out is not None:
+                                break
+                        except Exception:
+                            time.sleep(0.1)
+                    
                     upd_out: Dict[str, Any] = {}
                     if t_out is not None:
                         upd_out["out_temp"] = float(t_out)
@@ -438,7 +574,7 @@ class SensorReader:
                 try:
                     if gps.in_waiting:
                         line = gps.readline().decode("ascii", errors="ignore")
-                        if "$GPGGA" in line and pynmea2 is not None:
+                        if ("$GPGGA" in line or "$GNGGA" in line) and pynmea2 is not None:
                             msg = pynmea2.parse(line)
                             if msg.latitude and msg.longitude:
                                 la, lo = float(msg.latitude), float(msg.longitude)
@@ -496,22 +632,19 @@ class MqttTelemetryPublisher:
 
     def _build_payload(self) -> Dict[str, Any]:
         snap = self._state.get_snapshot()
+        # Keep MQTT realtime payload aligned with OLEDDisplayService._render_frame().
+        # The frontend IoT panel should display the same snapshot as the local OLED:
+        # IN/OUT temperature-humidity, Bee IN/OUT, W(weight), H(hornet_count).
         sensors: List[Dict[str, Any]] = [
+            {"type": "temperature", "value": round(float(snap["temp"]), 1), "unit": "C"},
+            {"type": "humidity", "value": round(float(snap["humi"]), 1), "unit": "%"},
+            {"type": "out_temp", "value": round(float(snap["out_temp"]), 1), "unit": "C"},
+            {"type": "out_humi", "value": round(float(snap["out_humi"]), 1), "unit": "%"},
+            {"type": "weight", "value": round(float(snap["weight"]), 2), "unit": "kg"},
             {"type": "bee_in", "value": int(snap["in_count"]), "unit": "count"},
             {"type": "bee_out", "value": int(snap["out_count"]), "unit": "count"},
+            {"type": "hornet_count", "value": int(snap["hornet_count"]), "unit": "count"},
         ]
-        if snap["inside_updated_at"] > 0:
-            sensors.extend([
-                {"type": "temperature", "value": round(float(snap["temp"]), 1), "unit": "C"},
-                {"type": "humidity", "value": round(float(snap["humi"]), 1), "unit": "%"},
-            ])
-        if snap["outside_updated_at"] > 0:
-            sensors.extend([
-                {"type": "out_temp", "value": round(float(snap["out_temp"]), 1), "unit": "C"},
-                {"type": "out_humi", "value": round(float(snap["out_humi"]), 1), "unit": "%"},
-            ])
-        if snap["weight_updated_at"] > 0:
-            sensors.append({"type": "weight", "value": round(float(snap["weight"]), 2), "unit": "kg"})
         if snap["gps_updated_at"] > 0:
             sensors.extend([
                 {"type": "gps_lat", "value": float(snap["lat"]), "unit": "deg"},
@@ -519,7 +652,6 @@ class MqttTelemetryPublisher:
             ])
         if snap["vision_updated_at"] > 0:
             sensors.extend([
-                {"type": "hornet_count", "value": int(snap["hornet_count"]), "unit": "count"},
                 {"type": "fps", "value": round(float(snap["fps"]), 2), "unit": "fps"},
                 {"type": "latency_ms", "value": round(float(snap["latency_ms"]), 2), "unit": "ms"},
             ])
@@ -634,11 +766,16 @@ class VisionResultReceiver:
                 self._logger.debug("VisionResultReceiver: JSON 解析失败: %s", e)
                 return
             try:
+                hornet_count = int(data.get("hornet_count", 0))
                 self._state.update_sensors(
-                    hornet_count=int(data.get("hornet_count", 0)),
+                    hornet_count=hornet_count,
                     fps=float(data.get("fps", 0.0)),
                     latency_ms=float(data.get("latency_ms", 0.0)),
                 )
+                if hornet_count > 0:
+                    self._logger.warning("VisionResultReceiver: 收到胡蜂识别结果 hornet_count=%d，准备联动加湿器", hornet_count)
+                elif self._logger.isEnabledFor(logging.DEBUG):
+                    self._logger.debug("VisionResultReceiver: 收到视觉结果 hornet_count=0")
             except Exception as e:
                 self._logger.debug("VisionResultReceiver: 状态更新失败: %s", e)
 
@@ -762,6 +899,15 @@ class HourlyArchiver:
                 self._last_lat = snap["lat"]
                 self._last_lon = snap["lon"]
 
+    def _beehive_post_url(self) -> str:
+        """beehive_url 可为根地址（与 transfer 共用）或完整 /api/beehive。"""
+        u = (self._cfg.beehive_url or "").strip().rstrip("/")
+        if not u:
+            return u
+        if u.endswith("/api/beehive"):
+            return u
+        return f"{u}/api/beehive"
+
     def _snapshot_and_reset(self) -> Optional[Dict[str, Any]]:
         with self._lock:
             if self._n == 0:
@@ -793,7 +939,7 @@ class HourlyArchiver:
 
     def _post(self, payload: Dict[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        req = Request(self._cfg.beehive_url, data=body, method="POST")
+        req = Request(self._beehive_post_url(), data=body, method="POST")
         req.add_header("Content-Type", "application/json")
         req.add_header("Content-Length", str(len(body)))
         token = (self._cfg.api_token or "").strip()
@@ -842,7 +988,7 @@ class HourlyArchiver:
             return
         self._thread = threading.Thread(target=self._loop, daemon=True, name="hourly-archiver")
         self._thread.start()
-        self._logger.info("HourlyArchiver 已启动 → %s", self._cfg.beehive_url)
+        self._logger.info("HourlyArchiver 已启动 → %s", self._beehive_post_url())
 
     def stop(self) -> None:
         self._stop.set()
@@ -855,7 +1001,7 @@ class HourlyArchiver:
 # ------------------------------------------------------------------ #
 
 class HumidifierController:
-    COOLDOWN_SECONDS = 300
+    RECENT_HORNET_WINDOW_SECONDS = 10.0
 
     def __init__(self, cfg: RuntimeConfig, state: SharedSensorState, logger: logging.Logger) -> None:
         self._cfg = cfg.sensor
@@ -865,24 +1011,25 @@ class HumidifierController:
         self._logger = logger
         self._stop = threading.Event()
         self._thread: Optional[threading.Thread] = None
-        self._gpio: Any = None
+        self._relay: Any = None
         self._last_trigger_time: float = 0.0
+        self._last_deactivate_time: float = 0.0
         self._is_active: bool = False
 
     def _init_gpio(self) -> bool:
         try:
-            import RPi.GPIO as GPIO
-            self._gpio = GPIO
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(self._cfg.humidifier_gpio_pin, GPIO.OUT)
-            active = GPIO.LOW if self._cfg.humidifier_active_low else GPIO.HIGH
-            inactive = GPIO.HIGH if self._cfg.humidifier_active_low else GPIO.LOW
-            GPIO.output(self._cfg.humidifier_gpio_pin, inactive)
-            self._logger.info("HumidifierController: GPIO%d 初始化完成 (低电平触发=%s)",
-                           self._cfg.humidifier_gpio_pin, self._cfg.humidifier_active_low)
+            from gpiozero import OutputDevice
+            self._relay = OutputDevice(
+                self._cfg.humidifier_gpio_pin,
+                active_high=not self._cfg.humidifier_active_low,
+                initial_value=False
+            )
+            trigger_level = "低电平" if self._cfg.humidifier_active_low else "高电平"
+            self._logger.info("HumidifierController: GPIO%d 初始化完成 (%s触发, 使用gpiozero)",
+                           self._cfg.humidifier_gpio_pin, trigger_level)
             return True
         except ImportError:
-            self._logger.warning("HumidifierController: RPi.GPIO 未安装，加湿器功能禁用")
+            self._logger.warning("HumidifierController: gpiozero 未安装，加湿器功能禁用")
             return False
         except Exception as e:
             self._logger.warning("HumidifierController: GPIO初始化失败: %s", e)
@@ -890,46 +1037,62 @@ class HumidifierController:
 
     def _worker(self) -> None:
         if not self._init_gpio():
+            self._logger.error("HumidifierController: GPIO初始化失败，继电器功能不可用！请检查 RPi.GPIO 安装和权限")
             return
-        self._logger.info("HumidifierController 已启动，监控 hornet_count...")
+        hold_s = self._cfg.humidifier_trigger_duration_ms / 1000.0
+        cooldown_s = max(0.0, float(getattr(self._cfg, "humidifier_cooldown_seconds", 10.0)))
+        trigger_level = "低电平" if self._cfg.humidifier_active_low else "高电平"
+        self._logger.info("HumidifierController 已启动，监控 hornet_count... (%s触发, 保持=%.1f秒, 冷却=%.1f秒)",
+                          trigger_level, hold_s, cooldown_s)
         while not self._stop.is_set():
             try:
-                snap = self._state.get_snapshot()
-                hc = snap.get("hornet_count", 0)
                 now = time.time()
+                snap = self._state.get_snapshot()
+                hc = int(snap.get("hornet_count", 0) or 0)
+                last_hornet_seen_at = float(snap.get("last_hornet_seen_at", 0.0) or 0.0)
+                hornet_event_recent = last_hornet_seen_at > 0 and (now - last_hornet_seen_at) <= self.RECENT_HORNET_WINDOW_SECONDS
                 if self._diag.enabled and self._hum_ticker.should_fire():
                     self._logger.info(
-                        "[DIAG][加湿器] hornet_count=%d 继电器激活=%s GPIO%d",
+                        "[DIAG][加湿器] hornet_count=%d 最近胡蜂=%.1fs前 继电器激活=%s 保持剩余=%.0fs 冷却剩余=%.0fs GPIO%d",
                         int(hc),
+                        (now - last_hornet_seen_at) if last_hornet_seen_at > 0 else -1,
                         self._is_active,
+                        max(0, hold_s - (now - self._last_trigger_time)),
+                        max(0, cooldown_s - (now - self._last_deactivate_time)),
                         self._cfg.humidifier_gpio_pin,
                     )
 
-                if hc > 0 and (now - self._last_trigger_time) > self.COOLDOWN_SECONDS:
-                    self._trigger(now)
-                elif self._is_active and (now - self._last_trigger_time) > (self._cfg.humidifier_trigger_duration_ms / 1000.0):
+                if hc > 0 or hornet_event_recent:
+                    if self._is_active:
+                        self._last_trigger_time = now
+                    elif self._last_deactivate_time > 0 and (now - self._last_deactivate_time) < cooldown_s:
+                        cooldown_left = cooldown_s - (now - self._last_deactivate_time)
+                        self._logger.info("HumidifierController: 检测到胡蜂(count=%d) 但冷却中，还需等待 %.0f秒", hc, cooldown_left)
+                    else:
+                        self._logger.info("HumidifierController: 检测到胡蜂(count=%d) 准备触发继电器!", hc)
+                        self._trigger(now)
+                elif self._is_active and (now - self._last_trigger_time) > hold_s:
                     self._deactivate()
             except Exception as e:
-                self._logger.debug("HumidifierController: 循环错误: %s", e)
+                self._logger.warning("HumidifierController: 循环错误: %s", e)
             time.sleep(1.0)
 
     def _trigger(self, now: float) -> None:
         try:
-            inactive = self._gpio.HIGH if self._cfg.humidifier_active_low else self._gpio.LOW
-            active = self._gpio.LOW if self._cfg.humidifier_active_low else self._gpio.HIGH
-            self._gpio.output(self._cfg.humidifier_gpio_pin, active)
+            self._relay.on()
             self._is_active = True
             self._last_trigger_time = now
             duration_s = self._cfg.humidifier_trigger_duration_ms / 1000.0
-            self._logger.warning("HumidifierController: 🐝 检测到胡蜂! 加湿器已启动 (%.1f秒)", duration_s)
+            trigger_level = "低电平" if self._cfg.humidifier_active_low else "高电平"
+            self._logger.warning("HumidifierController: 检测到胡蜂! 加湿器继电器已启动 (%s触发, %.1f秒)", trigger_level, duration_s)
         except Exception as e:
             self._logger.error("HumidifierController: 触发失败: %s", e)
 
     def _deactivate(self) -> None:
         try:
-            inactive = self._gpio.HIGH if self._cfg.humidifier_active_low else self._gpio.LOW
-            self._gpio.output(self._cfg.humidifier_gpio_pin, inactive)
+            self._relay.off()
             self._is_active = False
+            self._last_deactivate_time = time.time()
             self._logger.info("HumidifierController: 加湿器已关闭")
         except Exception as e:
             self._logger.error("HumidifierController: 关闭失败: %s", e)
@@ -940,6 +1103,11 @@ class HumidifierController:
             return
         self._thread = threading.Thread(target=self._worker, daemon=True, name="humidifier")
         self._thread.start()
+        trigger_level = "低电平" if self._cfg.humidifier_active_low else "高电平"
+        cooldown_s = max(0.0, float(getattr(self._cfg, "humidifier_cooldown_seconds", 10.0)))
+        self._logger.info("HumidifierController: 线程已启动 (GPIO%d, %s触发, 持续=%dms, 冷却=%.1fs)",
+                       self._cfg.humidifier_gpio_pin, trigger_level,
+                       self._cfg.humidifier_trigger_duration_ms, cooldown_s)
 
     def stop(self) -> None:
         self._stop.set()
@@ -950,9 +1118,9 @@ class HumidifierController:
                 pass
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=2)
-        if self._gpio:
+        if hasattr(self, '_relay') and self._relay:
             try:
-                self._gpio.cleanup()
+                self._relay.close()
             except Exception:
                 pass
 
@@ -984,11 +1152,26 @@ class OLEDDisplayService:
         try:
             import board as _b
             import busio
-            i2c = busio.I2C(_b.SCL, _b.SDA)
             addr = int(str(self._cfg.oled_i2c_address), 16)
-            self._oled = adafruit_ssd1306.SSD1306_I2C(
-                self._cfg.oled_width, self._cfg.oled_height, i2c, addr=addr
-            )
+
+            self._logger.info("OLEDDisplayService: 初始化I2C总线...")
+            try:
+                self._i2c = busio.I2C(_b.SCL, _b.SDA)
+            except Exception as e:
+                self._logger.error("OLEDDisplayService: I2C初始化失败: %s", e)
+                self._logger.error("请确保I2C已启用: sudo raspi-config -> Interface Options -> I2C")
+                return False
+
+            self._logger.info("OLEDDisplayService: 连接OLED (地址: 0x%02X)...", addr)
+            try:
+                self._oled = adafruit_ssd1306.SSD1306_I2C(
+                    self._cfg.oled_width, self._cfg.oled_height, self._i2c, addr=addr
+                )
+            except Exception as e:
+                self._logger.error("OLEDDisplayService: OLED连接失败: %s", e)
+                self._logger.error("请检查: 1) I2C地址是否正确 2) 设备是否连接 3) 运行 'i2cdetect -y 1' 确认")
+                return False
+
             from PIL import Image, ImageDraw, ImageFont
             self._image = Image.new('1', (self._cfg.oled_width, self._cfg.oled_height))
             self._draw = ImageDraw.Draw(self._image)
@@ -1007,32 +1190,38 @@ class OLEDDisplayService:
 
     def _render_frame(self) -> None:
         try:
-            self._image.fill(0)
+            self._image = Image.new('1', (self._cfg.oled_width, self._cfg.oled_height))
             self._draw = ImageDraw.Draw(self._image)
             snap = self._state.get_snapshot()
 
             self._draw.text((0, 0), "SmartHive Monitor", fill=255, font=self._font)
-            
+
             in_temp = snap.get('in_temp', 0)
             in_humi = snap.get('in_humi', 0)
             out_temp = snap.get('out_temp', 0)
             out_humi = snap.get('out_humi', 0)
             weight = snap.get('weight', 0)
             hornets = snap.get('hornet_count', 0)
+            bee_in = snap.get('in_count', 0)
+            bee_out = snap.get('out_count', 0)
 
             self._draw.text((0, 14), f"IN:{in_temp:5.1f}C/{in_humi:5.1f}%", fill=255, font=self._font)
             self._draw.text((0, 26), f"OUT:{out_temp:4.1f}C/{out_humi:4.1f}%", fill=255, font=self._font)
-            self._draw.text((0, 38), f"W:{weight:5.1f}kg H:{hornets}", fill=255, font=self._font)
-            
-            status = "ALERT" if hornets > 0 else "OK"
-            self._draw.text((0, 50), f"Status:{status}", fill=255, font=self._font)
+            self._draw.text((0, 38), f"Bee IN:{bee_in:4d} OUT:{bee_out:4d}", fill=255, font=self._font)
+            self._draw.text((0, 50), f"W:{weight:5.1f}kg H:{hornets}", fill=255, font=self._font)
 
             self._oled.image(self._image)
             self._oled.show()
             if self._diag.enabled and self._oled_ticker.should_fire():
                 self._logger.debug("[DIAG][OLED] 刷新一帧 OK")
         except Exception as e:
-            self._logger.debug("OLEDDisplayService: 渲染失败: %s", e)
+            self._logger.warning("OLEDDisplayService: 渲染失败: %s", e)
+            # On Pi 5, I2C bus may differ — log hint
+            if "I2C" in str(e) or "i2c" in str(e).lower() or "errno" in str(e).lower():
+                self._logger.warning(
+                    "OLED I2C错误提示: Raspberry Pi 5 的 I2C 总线可能不是 bus 1，"
+                    "请运行 'i2cdetect -y 1' 和 'i2cdetect -y 22' 确认OLED所在的总线号"
+                )
 
     def _worker(self) -> None:
         if not self._init_oled():

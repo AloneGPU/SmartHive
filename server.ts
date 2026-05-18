@@ -46,10 +46,8 @@ import { processChatMessage, transcribeAudioToText } from './services/qwenServic
 import {
   buildIotDeviceStatus,
   getStorageBucketMinutes,
-  mirrorIotSensorsToBeehiveRecord,
   normalizeSensors,
-  selectTelemetryPointsForPersistence,
-  shouldPersistMirrorForDevice
+  selectTelemetryPointsForPersistence
 } from './services/iotBridge';
 import { logger } from './services/logger';
 import { dataConsistencyChecker } from './services/dataConsistencyChecker';
@@ -167,6 +165,47 @@ const getSystemConfigSnapshot = async () => {
       String(
         dbConfig.vision_device_id || fileConfig.visionDeviceId || process.env.VISION_DEVICE_ID || 'pi5-vision-client'
       ).trim() || 'pi5-vision-client'
+  };
+};
+
+const persistVideoStreamConfig = async (config: {
+  videoStreamUrl: string;
+  videoStreamMode?: 'video' | 'mjpeg';
+  videoStreamSource?: 'direct' | 'proxy';
+  visionDeviceId?: string;
+}) => {
+  const normalized = {
+    videoStreamUrl: config.videoStreamUrl.trim(),
+    videoStreamMode: config.videoStreamMode === 'video' ? 'video' as const : 'mjpeg' as const,
+    videoStreamSource: config.videoStreamSource === 'proxy' ? 'proxy' as const : 'direct' as const,
+    visionDeviceId: (config.visionDeviceId || 'pi5-vision-client').trim() || 'pi5-vision-client'
+  };
+
+  process.env.VIDEO_STREAM_URL = normalized.videoStreamUrl;
+  process.env.VIDEO_STREAM_MODE = normalized.videoStreamMode;
+  process.env.VIDEO_STREAM_SOURCE = normalized.videoStreamSource;
+  process.env.VISION_DEVICE_ID = normalized.visionDeviceId;
+  writeConfig(normalized);
+
+  let databasePersisted = true;
+  let databaseError = '';
+  try {
+    await Promise.all([
+      updateSystemConfig('video_stream_url', normalized.videoStreamUrl),
+      updateSystemConfig('video_stream_mode', normalized.videoStreamMode),
+      updateSystemConfig('video_stream_source', normalized.videoStreamSource),
+      updateSystemConfig('vision_device_id', normalized.visionDeviceId)
+    ]);
+  } catch (error) {
+    databasePersisted = false;
+    databaseError = error instanceof Error ? error.message : String(error);
+    console.warn('[config] failed to persist video stream configuration to database:', error);
+  }
+
+  return {
+    ...normalized,
+    databasePersisted,
+    databaseError
   };
 };
 
@@ -581,7 +620,7 @@ app.post('/api/auth/login', (req, res) => {
         return res.status(401).json({ message: 'API 令牌无效' });
       }
     }
-    return res.json({ ok: true, role: 'user' });
+    return res.json({ ok: true, role: 'user', apiToken: apiTok || undefined });
   }
 
   const adminPass = (process.env.ADMIN_PASSWORD || '').trim();
@@ -638,31 +677,34 @@ app.get('/api/iot/stream', (req, res) => {
   if (!token || token !== expectedToken) {
     return res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
-  
-  // 尝试添加客户端，检查连接数限制
+
+  // 先登记连接，确保连接数满时仍能正常返回 HTTP 503，而不是已经切到 SSE 响应后再报错。
   if (!realtimeHub.addClient(res)) {
-    return; // addClient 已经发送了 503 响应
+    return;
   }
   
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders?.();
+  res.setHeader('Access-Control-Allow-Origin', '*');
   
-  const ping = setInterval(() => {
-    try {
-      res.write(`event: ping\ndata: {"ts":${Date.now()}}\n\n`);
-    } catch (error) {
-      clearInterval(ping);
-      realtimeHub.removeClient(res);
-    }
-  }, 10000);
+  if (res.flushHeaders) {
+    res.flushHeaders();
+  }
+
+  const requestedDeviceId = typeof req.query.deviceId === 'string' ? req.query.deviceId.trim() : '';
+  const latestTelemetry = realtimeHub.latestTelemetry(requestedDeviceId || undefined);
+  if (latestTelemetry) {
+    res.write(`event: ${latestTelemetry.type}\ndata: ${JSON.stringify(latestTelemetry)}\n\n`);
+  }
   
-  req.on('close', () => {
-    clearInterval(ping);
+  const onClose = () => {
     realtimeHub.removeClient(res);
-  });
+  };
+  
+  req.on('close', onClose);
+  req.on('error', onClose);
 });
 
 app.get('/api/iot/latest', verifyToken, async (req, res) => {
@@ -670,6 +712,15 @@ app.get('/api/iot/latest', verifyToken, async (req, res) => {
   if (!deviceId) return res.status(400).json({ message: 'deviceId is required' });
   const points = await fetchIotLatestByDevice(deviceId);
   return res.status(200).json(points);
+});
+
+app.get('/api/iot/realtime-latest', verifyToken, (req, res) => {
+  const deviceId = typeof req.query.deviceId === 'string' ? req.query.deviceId.trim() : '';
+  const latestTelemetry = realtimeHub.latestTelemetry(deviceId || undefined);
+  if (!latestTelemetry) {
+    return res.status(200).json(null);
+  }
+  return res.status(200).json(latestTelemetry);
 });
 
 app.get('/api/iot/history', verifyToken, async (req, res) => {
@@ -719,16 +770,6 @@ app.post('/api/iot/ingest', verifyToken, async (req, res) => {
     unit: s.unit,
     qos: body.qos ?? 1
   }));
-  const status = buildIotDeviceStatus(body.deviceId, body.status, timestamp, points.length);
-  const statusSaved = await upsertIotDeviceStatus(status);
-  const pointsToPersist = selectTelemetryPointsForPersistence(points);
-  const inserted = pointsToPersist.length > 0 ? await insertIotTelemetryBatch(pointsToPersist) : 0;
-  const mirroredRecord = mirrorIotSensorsToBeehiveRecord(body.deviceId, timestamp, normalizedSensors);
-  let mirroredSaved = true;
-  const mirrorPersisted = Boolean(mirroredRecord && shouldPersistMirrorForDevice(body.deviceId, timestamp));
-  if (mirroredRecord && mirrorPersisted) {
-    mirroredSaved = await insertBeehiveData(mirroredRecord);
-  }
   realtimeHub.broadcast({
     type: 'iot.telemetry',
     payload: {
@@ -738,29 +779,49 @@ app.post('/api/iot/ingest', verifyToken, async (req, res) => {
     },
     ts: Date.now()
   });
-  if (!statusSaved || (pointsToPersist.length > 0 && inserted <= 0) || (mirrorPersisted && !mirroredSaved)) {
-    return res.status(503).json({
-      message: 'Telemetry accepted but failed to persist reliably',
-      statusSaved,
-      inserted,
-      requestedPoints: points.length,
-      persistedPoints: pointsToPersist.length,
-      skippedByBucket: points.length - pointsToPersist.length,
-      mirroredSaved,
-      mirroredToBeehive: mirrorPersisted
-    });
-  }
+
+  const status = buildIotDeviceStatus(body.deviceId, body.status, timestamp, points.length);
+  const pointsToPersist = selectTelemetryPointsForPersistence(points);
+
+  void (async () => {
+    try {
+      const statusSaved = await upsertIotDeviceStatus(status);
+      if (!statusSaved) {
+        logger.warn('api', `/api/iot/ingest 设备状态未写入数据库，实时推送已完成: ${body.deviceId}`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.warn('api', `/api/iot/ingest 设备状态写入失败，实时推送不受影响: ${message}`);
+    }
+
+    try {
+      const inserted = pointsToPersist.length > 0 ? await insertIotTelemetryBatch(pointsToPersist) : 0;
+      if (pointsToPersist.length > 0 && inserted <= 0) {
+        logger.warn('api', `/api/iot/ingest 遥测历史未写入数据库，实时推送已完成: ${body.deviceId}`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.warn('api', `/api/iot/ingest 遥测历史写入失败，实时推送不受影响: ${message}`);
+    }
+  })();
+
   return res.status(201).json({
-    inserted,
+    accepted: true,
+    realtimePushed: true,
+    persistenceQueued: true,
     requestedPoints: points.length,
     persistedPoints: pointsToPersist.length,
-    skippedByBucket: points.length - pointsToPersist.length,
-    mirroredToBeehive: mirrorPersisted
+    skippedByBucket: points.length - pointsToPersist.length
   });
 });
 
 app.get('/api/iot/monitor', verifyToken, async (_req, res) => {
-  const statuses = await fetchIotDeviceStatuses();
+  let statuses: Awaited<ReturnType<typeof fetchIotDeviceStatuses>> = [];
+  try {
+    statuses = await fetchIotDeviceStatuses();
+  } catch (error) {
+    logger.warn('api', `IoT 设备状态查询失败，监控接口降级返回 MQTT/SSE 状态: ${error instanceof Error ? error.message : String(error)}`);
+  }
   return res.status(200).json({
     mqtt: getMqttIngestStats(),
     stream: realtimeHub.stats(),
@@ -1189,6 +1250,64 @@ app.get('/api/config', verifyToken, async (_req, res) => {
   }
 });
 
+app.post('/api/device/video-stream', verifyToken, async (req, res) => {
+  try {
+    const body = req.body as {
+      deviceId?: string;
+      streamUrl?: string;
+      host?: string;
+      port?: number;
+      path?: string;
+      mode?: 'video' | 'mjpeg';
+      source?: 'direct' | 'proxy';
+    };
+    const deviceId = (String(body.deviceId || process.env.VISION_DEVICE_ID || 'pi5-vision-client').trim() || 'pi5-vision-client');
+    const rawPath = typeof body.path === 'string' && body.path.trim() ? body.path.trim() : '/stream';
+    const streamPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+    const streamUrl = (() => {
+      const direct = typeof body.streamUrl === 'string' ? body.streamUrl.trim() : '';
+      if (direct) return direct;
+      const host = typeof body.host === 'string' ? body.host.trim() : '';
+      const port = Number.isFinite(Number(body.port)) ? Number(body.port) : 5001;
+      if (!host) return '';
+      return `http://${host}:${port}${streamPath}`;
+    })();
+
+    if (!streamUrl) {
+      return res.status(400).json({ message: 'streamUrl or host is required' });
+    }
+
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(streamUrl);
+    } catch {
+      return res.status(400).json({ message: 'Invalid streamUrl' });
+    }
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return res.status(400).json({ message: 'streamUrl must use http or https' });
+    }
+
+    const result = await persistVideoStreamConfig({
+      videoStreamUrl: parsedUrl.toString(),
+      videoStreamMode: body.mode === 'video' ? 'video' : 'mjpeg',
+      videoStreamSource: body.source === 'proxy' ? 'proxy' : 'direct',
+      visionDeviceId: deviceId
+    });
+
+    logger.info('api', `设备 ${deviceId} 已注册视频流地址: ${result.videoStreamUrl}`);
+    return res.status(200).json({
+      ok: true,
+      ...result,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Failed to register device video stream',
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 // Update system configuration (API Keys) - 持久化到数据库
 app.post('/api/config', async (req, res) => {
   try {
@@ -1250,32 +1369,41 @@ app.post('/api/config', async (req, res) => {
       updates.push(updateSystemConfig('api_token', normalizedPayload.apiToken));
       process.env.API_TOKEN = normalizedPayload.apiToken;
     }
-    if (normalizedPayload.videoStreamUrl !== undefined) {
-      updates.push(updateSystemConfig('video_stream_url', normalizedPayload.videoStreamUrl));
-      process.env.VIDEO_STREAM_URL = normalizedPayload.videoStreamUrl;
-    }
-    if (normalizedPayload.videoStreamMode !== undefined) {
-      updates.push(updateSystemConfig('video_stream_mode', normalizedPayload.videoStreamMode));
-      process.env.VIDEO_STREAM_MODE = normalizedPayload.videoStreamMode;
-    }
-    if (normalizedPayload.videoStreamSource !== undefined) {
-      updates.push(updateSystemConfig('video_stream_source', normalizedPayload.videoStreamSource));
-      process.env.VIDEO_STREAM_SOURCE = normalizedPayload.videoStreamSource;
-    }
-    if (normalizedPayload.visionDeviceId !== undefined) {
-      updates.push(updateSystemConfig('vision_device_id', normalizedPayload.visionDeviceId));
-      process.env.VISION_DEVICE_ID = normalizedPayload.visionDeviceId;
+    const hasVideoConfig =
+      normalizedPayload.videoStreamUrl !== undefined ||
+      normalizedPayload.videoStreamMode !== undefined ||
+      normalizedPayload.videoStreamSource !== undefined ||
+      normalizedPayload.visionDeviceId !== undefined;
+    let videoDatabasePersisted = true;
+    let videoDatabaseError = '';
+    if (hasVideoConfig) {
+      const current = await getSystemConfigSnapshot();
+      const videoResult = await persistVideoStreamConfig({
+        videoStreamUrl: normalizedPayload.videoStreamUrl ?? current.videoStreamUrl,
+        videoStreamMode: normalizedPayload.videoStreamMode ?? (current.videoStreamMode === 'video' ? 'video' : 'mjpeg'),
+        videoStreamSource: normalizedPayload.videoStreamSource ?? (current.videoStreamSource === 'proxy' ? 'proxy' : 'direct'),
+        visionDeviceId: normalizedPayload.visionDeviceId ?? current.visionDeviceId
+      });
+      videoDatabasePersisted = videoResult.databasePersisted;
+      videoDatabaseError = videoResult.databaseError;
     }
 
     // 先写本地配置文件，保证“管理员配置一次后所有人可用”不依赖数据库。
-    writeConfig(normalizedPayload);
+    const filePayload = { ...normalizedPayload };
+    if (hasVideoConfig) {
+      delete filePayload.videoStreamUrl;
+      delete filePayload.videoStreamMode;
+      delete filePayload.videoStreamSource;
+      delete filePayload.visionDeviceId;
+    }
+    writeConfig(filePayload);
 
     // 更新其他环境变量
     if (normalizedPayload.corsOrigin !== undefined) {
       process.env.CORS_ORIGIN = normalizedPayload.corsOrigin;
     }
 
-    let databasePersisted = true;
+    let databasePersisted = videoDatabasePersisted;
     let databaseError = '';
     try {
       await Promise.all(updates);
@@ -1283,6 +1411,9 @@ app.post('/api/config', async (req, res) => {
       databasePersisted = false;
       databaseError = error instanceof Error ? error.message : String(error);
       console.warn('[config] failed to persist configuration to database, config.json fallback remains active:', error);
+    }
+    if (videoDatabaseError && !databaseError) {
+      databaseError = videoDatabaseError;
     }
 
     res.status(200).json({
@@ -1841,9 +1972,17 @@ app.get('/api/geocode/reverse', verifyToken, async (req, res) => {
     const city = Array.isArray(addressInfo.city) ? '' : addressInfo.city || addressInfo.province || '';
     const district = addressInfo.district || '';
     const road = addressInfo.township || addressInfo.streetNumber?.street || '';
-    const address = data?.regeocode?.formatted_address || [province, city, district, road].filter(Boolean).join(' ');
+    const rawFormatted = data?.regeocode?.formatted_address;
+    const formatted =
+      typeof rawFormatted === 'string'
+        ? rawFormatted.trim()
+        : Array.isArray(rawFormatted)
+          ? rawFormatted.filter((v: unknown) => typeof v === 'string').join(' ').trim()
+          : '';
+    const fromParts = [province, city, district, road].filter(Boolean).join(' ').trim();
+    const address = formatted || fromParts || `蜂箱位置 - ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
     const payload = {
-      address: address || `蜂箱位置 - ${lat.toFixed(4)}, ${lon.toFixed(4)}`,
+      address,
       province,
       city,
       district,
@@ -2025,10 +2164,12 @@ const startServer = async () => {
     // 验证环境变量
     validateEnvironment();
     
+    // MQTT/SSE 实时链路必须独立于数据库；即使 MySQL 暂时不可用，前端也应能看到实时上报。
+    startMqttIngestService();
+
     // Initialize database table
     try {
         await initializeDatabase();
-        startMqttIngestService();
     } catch (dbError) {
         console.warn('Warning: Database initialization failed. The server will start, but database features may not work.');
         console.warn('Error details:', dbError instanceof Error ? dbError.message : String(dbError));

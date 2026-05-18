@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""
+Raspberry Pi DHT22(GPIO17) -> MQTT -> SmartHive backend test publisher.
+
+Default behavior:
+- Read a DHT22 from BCM GPIO17
+- Publish to topic: smarthive/<device_id>/sensors
+- Use payload fields: out_temp / out_humi
+
+Dependencies:
+  pip install adafruit-circuitpython-dht paho-mqtt
+  sudo apt install libgpiod2
+
+Example:
+  python3 hardware/pi_dht22_mqtt_test.py \
+    --host 192.168.1.100 \
+    --port 1883 \
+    --device-id pi5-dht22-test \
+    --username smarthive_iot \
+    --password your_password
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import signal
+import socket
+import sys
+import time
+from typing import Optional, Tuple
+
+try:
+    import board
+except ImportError as exc:  # pragma: no cover - runtime dependency
+    raise SystemExit(
+        "Missing dependency: board. Install with `pip install adafruit-circuitpython-dht`."
+    ) from exc
+
+try:
+    import adafruit_dht
+except ImportError as exc:  # pragma: no cover - runtime dependency
+    raise SystemExit(
+        "Missing dependency: adafruit_dht. Install with `pip install adafruit-circuitpython-dht`."
+    ) from exc
+
+try:
+    import paho.mqtt.client as mqtt
+except ImportError as exc:  # pragma: no cover - runtime dependency
+    raise SystemExit(
+        "Missing dependency: paho-mqtt. Install with `pip install paho-mqtt`."
+    ) from exc
+
+
+LOGGER = logging.getLogger("pi-dht22-mqtt-test")
+STOP = False
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Read a DHT22 on Raspberry Pi GPIO17 and publish to SmartHive via MQTT."
+    )
+    parser.add_argument(
+        "--host",
+        default="121.196.155.132",
+        help="MQTT broker host or IP",
+    )
+    parser.add_argument("--port", type=int, default=1883, help="MQTT broker port")
+    parser.add_argument("--username", default="123456", help="MQTT username")
+    parser.add_argument("--password", default="226886", help="MQTT password")
+    parser.add_argument("--device-id", default="pi5-dht22-test", help="SmartHive deviceId")
+    parser.add_argument("--client-id", default="", help="MQTT client id")
+    parser.add_argument(
+        "--topic",
+        default="",
+        help="MQTT topic, default: smarthive/<device-id>/sensors",
+    )
+    parser.add_argument(
+        "--role",
+        choices=("outside", "inside"),
+        default="outside",
+        help="Sensor role. GPIO17 is usually outside, so default publishes out_temp/out_humi.",
+    )
+    parser.add_argument(
+        "--pin",
+        default="D17",
+        help="board pin name for adafruit_dht, default D17 (BCM GPIO17)",
+    )
+    parser.add_argument("--interval", type=float, default=10.0, help="Publish interval in seconds")
+    parser.add_argument("--qos", type=int, choices=(0, 1, 2), default=1, help="MQTT QoS")
+    parser.add_argument("--retain", action="store_true", help="Publish with retain flag")
+    parser.add_argument("--once", action="store_true", help="Read and publish one message, then exit")
+    parser.add_argument(
+        "--log-level",
+        choices=("DEBUG", "INFO", "WARNING", "ERROR"),
+        default="INFO",
+        help="Log level",
+    )
+    return parser.parse_args()
+
+
+def setup_logging(level: str) -> None:
+    logging.basicConfig(
+        level=getattr(logging, level.upper(), logging.INFO),
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+
+
+def handle_signal(_signum: int, _frame) -> None:
+    global STOP
+    STOP = True
+    LOGGER.info("Stopping...")
+
+
+def resolve_board_pin(pin_name: str):
+    try:
+        return getattr(board, pin_name)
+    except AttributeError as exc:
+        raise SystemExit(
+            f"Invalid pin '{pin_name}'. Example values: D17, D4, D18."
+        ) from exc
+
+
+def sensor_fields(role: str) -> Tuple[str, str]:
+    if role == "inside":
+        return "in_temp", "in_humi"
+    return "out_temp", "out_humi"
+
+
+def get_local_ip() -> str:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        return sock.getsockname()[0]
+    except OSError:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except OSError:
+            return "127.0.0.1"
+    finally:
+        sock.close()
+
+
+def read_dht22_with_retry(sensor, retries: int = 3, delay_seconds: float = 2.0) -> Tuple[float, float]:
+    last_error: Optional[Exception] = None
+    for _ in range(retries):
+        try:
+            temperature = sensor.temperature
+            humidity = sensor.humidity
+            if temperature is None or humidity is None:
+                raise RuntimeError("Empty DHT22 reading")
+            return float(temperature), float(humidity)
+        except RuntimeError as exc:
+            last_error = exc
+            time.sleep(delay_seconds)
+    raise RuntimeError(f"DHT22 read failed after {retries} retries: {last_error}")
+
+
+def build_payload(device_id: str, role: str, temperature: float, humidity: float) -> dict:
+    temp_field, humi_field = sensor_fields(role)
+    return {
+        "deviceId": device_id,
+        "timestamp": int(time.time() * 1000),
+        "sensors": [
+            {"type": temp_field, "value": round(temperature, 2), "unit": "C"},
+            {"type": humi_field, "value": round(humidity, 2), "unit": "%"},
+        ],
+        "status": {
+            "online": True,
+            "ip": get_local_ip(),
+        },
+    }
+
+
+def build_mqtt_client(args: argparse.Namespace) -> mqtt.Client:
+    client_id = args.client_id or f"{args.device_id}-mqtt-test"
+    try:
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
+    except (AttributeError, TypeError):
+        client = mqtt.Client(client_id=client_id)
+    if args.username:
+        client.username_pw_set(args.username, args.password)
+    client.reconnect_delay_set(min_delay=1, max_delay=10)
+
+    def on_connect(_client, _userdata, _flags, reason_code, _properties=None):
+        code = getattr(reason_code, "value", reason_code)
+        if code == 0:
+            LOGGER.info("MQTT connected: %s:%s", args.host, args.port)
+        else:
+            LOGGER.error("MQTT connect failed, reason=%s", code)
+
+    def on_disconnect(_client, _userdata, *callback_args):
+        if STOP:
+            return
+        if len(callback_args) >= 2:
+            disconnect_flags = callback_args[0]
+            reason_code = callback_args[1]
+        elif len(callback_args) == 1:
+            disconnect_flags = None
+            reason_code = callback_args[0]
+        else:
+            disconnect_flags = None
+            reason_code = "unknown"
+        code = getattr(reason_code, "value", reason_code)
+        LOGGER.warning(
+            "MQTT disconnected, reason=%s disconnect_flags=%s; client will retry",
+            code,
+            disconnect_flags,
+        )
+
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    return client
+
+
+def main() -> int:
+    args = parse_args()
+    setup_logging(args.log_level)
+
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    pin = resolve_board_pin(args.pin)
+    topic = args.topic or f"smarthive/{args.device_id}/sensors"
+    dht_device = adafruit_dht.DHT22(pin, use_pulseio=False)
+    mqtt_client = build_mqtt_client(args)
+
+    try:
+        LOGGER.info("Using DHT22 on board.%s, role=%s, topic=%s", args.pin, args.role, topic)
+        mqtt_client.connect(args.host, args.port, keepalive=30)
+        mqtt_client.loop_start()
+
+        while not STOP:
+            try:
+                temperature, humidity = read_dht22_with_retry(dht_device)
+                payload = build_payload(args.device_id, args.role, temperature, humidity)
+                payload_text = json.dumps(payload, ensure_ascii=True)
+                result = mqtt_client.publish(topic, payload_text, qos=args.qos, retain=args.retain)
+                result.wait_for_publish()
+
+                if result.rc != mqtt.MQTT_ERR_SUCCESS:
+                    LOGGER.error("Publish failed, rc=%s", result.rc)
+                else:
+                    LOGGER.info(
+                        "Published OK: temp=%.2fC humi=%.2f%% deviceId=%s",
+                        temperature,
+                        humidity,
+                        args.device_id,
+                    )
+                    LOGGER.debug("Payload: %s", payload_text)
+            except Exception as exc:  # pragma: no cover - hardware/network runtime path
+                LOGGER.exception("Read or publish failed: %s", exc)
+
+            if args.once:
+                break
+
+            deadline = time.time() + max(1.0, args.interval)
+            while not STOP and time.time() < deadline:
+                time.sleep(0.2)
+    finally:
+        try:
+            mqtt_client.loop_stop()
+            mqtt_client.disconnect()
+        except Exception:
+            pass
+        try:
+            dht_device.exit()
+        except Exception:
+            pass
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

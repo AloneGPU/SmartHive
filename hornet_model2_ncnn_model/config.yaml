@@ -15,8 +15,8 @@ camera:
   height: 480
   fps: 30
   exposure: -1
-  # Use official driver for low latency
-  backend: "picamera2" 
+  # Use OpenCV for USB camera support
+  backend: "opencv" 
 
 model:
   # EXACT ABSOLUTE PATH to your verified model directory
@@ -31,7 +31,7 @@ model:
   output_name: "output0"
   
   # Detection Thresholds
-  confidence_threshold: 0.3   # Slightly higher for cleaner dashboard
+  confidence_threshold: 0.3   # 与参考代码一致，平衡精度和召回
   nms_threshold: 0.45
   
   # YOLOv8 standard normalization
@@ -73,14 +73,14 @@ mqtt:
   publish_interval_seconds: 2.0
   publish_qos: 1
   cache_file: "/home/first/Desktop/yolov8/hornet_model2_ncnn_model/mqtt_cache.jsonl"
-  compress_payload: true
+  compress_payload: false
 
 server_upload:
   enabled: true
-  url: "http://127.0.0.1:3001/api/vision/frame"
-  token: ""
+  url: "http://121.196.155.132/api/vision/frame"
+  token: "G1AUlrlDXiQMl6Kc"
   device_id: "pi5-vision-client"
-  interval_seconds: 0.5
+  interval_seconds: 3
   jpeg_quality: 80
   timeout_seconds: 2.0
   # NOTE: local_db_path/batch_sync_size have been moved to telemetry_sync.
@@ -100,9 +100,9 @@ telemetry_sync:
 
   # Cloud MQTT (your backend MQTT broker)
   cloud_enabled: true
-  cloud_broker_url: "mqtt://127.0.0.1:1883"
-  cloud_username: ""
-  cloud_password: ""
+  cloud_broker_url: "mqtt://121.196.155.132:1883"
+  cloud_username: "123456"
+  cloud_password: "226886"
   cloud_topic: ""                  # empty => use mqtt.data_topic (smarthive/pi5/sensors)
   publish_qos: 1
   publish_timeout_seconds: 6.0
@@ -110,9 +110,11 @@ telemetry_sync:
   min_flush_interval_seconds: 1.0
 
 archive:
+  # 小时级数据统一由 transfer_process 汇聚后写入后端，避免 sensor_process 与
+  # transfer_process 同时向 /api/beehive 写入造成重复归档。
   enabled: false
-  beehive_url: "http://127.0.0.1:3001/api/beehive"
-  api_token: ""
+  beehive_url: "http://121.196.155.132"
+  api_token: "G1AUlrlDXiQMl6Kc"
   interval_seconds: 3600
   align_to_hour: true
   timeout_seconds: 10.0
@@ -162,11 +164,12 @@ sensor:
   ir_debounce_ms: 30
   ir_direction_window_ms: 500
 
-  # 加湿器模块配置（低电平触发，识别到胡蜂时启动5V输出）
+  # 加湿器模块配置（高电平触发，识别到胡蜂时启动5V输出）
   humidifier_enabled: true
   humidifier_gpio_pin: 25
-  humidifier_active_low: true
+  humidifier_active_low: false
   humidifier_trigger_duration_ms: 30000
+  humidifier_cooldown_seconds: 10
 
   # OLED显示屏配置（SSD1306驱动，0.96寸，4针I2C接口）
   oled_enabled: true
@@ -177,14 +180,17 @@ sensor:
 
 servo:
   enabled: true
+  driver: "gpiozero"
   gpio_pin: 18
   pwm_frequency: 50
-  pulse_min_us: 500
-  pulse_max_us: 2500
+  pulse_min_us: 1000
+  pulse_max_us: 2000
   angle_min: 10.0
   angle_max: 170.0
   angle_center: 90.0
-  scan_speed_dps: 25.0
+  scan_speed_dps: 12.0
+  scan_step_degrees: 2.0
+  scan_step_interval_seconds: 0.12
   lock_lost_seconds: 2.0
   track_deadzone_px: 40
   track_gain: 0.05

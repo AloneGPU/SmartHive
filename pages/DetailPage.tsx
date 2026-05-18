@@ -14,7 +14,8 @@ import {
   resolveOutsideHumidity,
   resolveOutsideTemperature,
   resolvePrimaryHumidity,
-  resolvePrimaryTemperature
+  resolvePrimaryTemperature,
+  toFiniteNumber
 } from '../services/hiveDataAdapter';
 
 const formatYMD = (d: Date) => {
@@ -43,7 +44,7 @@ const parseDateYMD = (s: string | null) => {
 };
 
 export const DetailPage = () => {
-  const { aiConfig, location } = useAppContext();
+  const { aiConfig, location, hiveData } = useAppContext();
   const navigate = useNavigate();
   const { entityId: entityIdFromPath } = useParams();
   const [sp, setSp] = useSearchParams();
@@ -127,7 +128,7 @@ export const DetailPage = () => {
     setSp({ ...Object.fromEntries(sp), start: formatYMD(start), end: formatYMD(end) });
   };
 
-  const points = rangeQuery.data || [];
+  const points = Array.isArray(rangeQuery.data) ? rangeQuery.data : [];
   const latest = points.length > 0 ? points[points.length - 1] : null;
   const liveData = liveQuery.data || null;
   const liveInsideTemperature = resolveInsideTemperature(liveData);
@@ -136,9 +137,27 @@ export const DetailPage = () => {
   const liveOutsideHumidity = resolveOutsideHumidity(liveData);
   const liveWeight = liveData && Number.isFinite(Number(liveData.weight)) ? Number(liveData.weight) : null;
   const liveHornets = liveData && Number.isFinite(Number(liveData.hornetsDetected)) ? Number(liveData.hornetsDetected) : null;
-  const liveLocationText = Number.isFinite(location.latitude) && Number.isFinite(location.longitude)
-    ? ((location.address || '').trim() || `蜂箱位置 - ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`)
-    : '暂无定位';
+  // 与「实时当前值」一致：优先用 live 轮询里的经纬度（与库表最新一条对齐），避免只用 context 里较慢刷新的解析结果
+  const displayLat =
+    toFiniteNumber(liveData?.latitude) ?? toFiniteNumber(hiveData?.latitude) ?? toFiniteNumber(location.latitude);
+  const displayLon =
+    toFiniteNumber(liveData?.longitude) ?? toFiniteNumber(hiveData?.longitude) ?? toFiniteNumber(location.longitude);
+  const ctxLat = toFiniteNumber(location.latitude);
+  const ctxLon = toFiniteNumber(location.longitude);
+  const parsedAddress = typeof location.address === 'string' ? location.address.trim() : '';
+  const coordsMatchContext =
+    displayLat !== null &&
+    displayLon !== null &&
+    ctxLat !== null &&
+    ctxLon !== null &&
+    Math.abs(displayLat - ctxLat) < 1e-4 &&
+    Math.abs(displayLon - ctxLon) < 1e-4;
+  const liveLocationText =
+    displayLat !== null && displayLon !== null
+      ? coordsMatchContext && parsedAddress
+        ? parsedAddress
+        : `蜂箱位置 - ${displayLat.toFixed(5)}, ${displayLon.toFixed(5)}`
+      : '暂无定位';
   const formatLiveUpdatedAt = (timestamp?: number | null) => {
     if (!timestamp || !Number.isFinite(timestamp)) return '暂无';
     const diff = Date.now() - timestamp;
@@ -370,7 +389,7 @@ export const DetailPage = () => {
           <TrendCard 
             title={isCompareMode ? "趋势叠加对比" : "历史趋势分析"} 
             data={points} 
-            comparisonData={isCompareMode && compareQuery.data ? [compareQuery.data] : undefined}
+            comparisonData={isCompareMode && Array.isArray(compareQuery.data) ? [compareQuery.data] : undefined}
             mainRangeStart={startDate.getTime()}
             compareRangeStart={compareStartDate?.getTime()}
             isLoading={rangeQuery.isFetching || compareQuery.isFetching} 

@@ -232,14 +232,36 @@ export const processChatMessage = async (
   if (sqlQuery) {
     logger.info('api', 'AI生成SQL查询', { sql: sqlQuery.substring(0, 160) });
 
-    const queryResult = await aiQueryService.executeQuery(sqlQuery);
+    let queryResult = await aiQueryService.executeQuery(sqlQuery);
+
+    // 首次查询失败时，用修正 prompt 重试一次（AI 可能幻觉出不存在的表）
+    if (!queryResult.success) {
+      logger.info('api', 'AI SQL 首次执行失败，尝试修正重试', { error: queryResult.error });
+      const retryResult = await callQwenChat(
+        apiKey,
+        model,
+        [
+          { role: 'system', content: buildPlannerPrompt(dbSchema) + '\n\n【重要】你上次生成的 SQL 执行失败，错误信息如下。请严格只使用上述 Schema 中列出的 4 张表（hive_data、iot_telemetry、iot_device_status、vision_recognition），不要使用任何其他表名。只输出修正后的 SQL 代码块。' },
+          { role: 'user', content: message },
+          { role: 'assistant', content: content },
+          { role: 'user', content: `上次 SQL 执行失败：${queryResult.error}\n请修正后重新生成。` }
+        ],
+        { temperature: 0.1, maxTokens: 1600 }
+      );
+
+      if (retryResult.ok) {
+        const retrySql = extractSQL(retryResult.content);
+        if (retrySql) {
+          logger.info('api', 'AI修正SQL查询', { sql: retrySql.substring(0, 160) });
+          queryResult = await aiQueryService.executeQuery(retrySql);
+        }
+      }
+    }
 
     if (!queryResult.success) {
-      return sanitizeAssistantAnswer([
-        '我已尝试调取历史数据，但这次查询没有成功，所以当前不能给出可靠分析。',
-        queryResult.error ? `原因：${queryResult.error}` : '',
-        '建议你把时间范围说得更具体一些，例如“最近24小时”“本周”或“最近7天”。'
-      ].filter(Boolean).join('\n'));
+      return sanitizeAssistantAnswer(
+        '抱歉，这次查询未能成功。请尝试换一种问法，例如指定更具体的时间范围（”最近24小时””本周”）或明确指标名称（温度、湿度、重量等）。'
+      );
     }
 
     const analysisResult = await callQwenChat(

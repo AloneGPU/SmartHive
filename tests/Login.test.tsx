@@ -14,8 +14,13 @@ describe('Login Component', () => {
     globalThis.fetch = originalFetch;
   });
 
-  it('calls onLogin with "user" when logging in as user without token', async () => {
+  it('calls onLogin with "user" and apiToken from backend', async () => {
     const onLogin = vi.fn();
+    vi.mocked(globalThis.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, role: 'user', apiToken: 'server-token-abc' })
+    } as Response);
+
     const user = userEvent.setup();
     render(<Login onLogin={onLogin} apiBaseUrl="/api" />);
 
@@ -23,9 +28,15 @@ describe('Login Component', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(onLogin).toHaveBeenCalledWith('user');
+      expect(onLogin).toHaveBeenCalledWith('user', 'server-token-abc');
     });
-    expect(globalThis.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/auth/login',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ role: 'user' })
+      })
+    );
   });
 
   it('calls onLogin with "admin" when backend accepts password', async () => {
@@ -43,7 +54,7 @@ describe('Login Component', () => {
     await user.click(screen.getByRole('button', { name: /进入系统/i }));
 
     await waitFor(() => {
-      expect(onLogin).toHaveBeenCalledWith('admin', 'server-token-xyz');
+      expect(onLogin).toHaveBeenCalledWith('admin', 'server-token-xyz', undefined);
     });
     expect(globalThis.fetch).toHaveBeenCalledWith(
       '/api/auth/login',

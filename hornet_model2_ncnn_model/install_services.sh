@@ -15,7 +15,7 @@ fi
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USER_NAME="first"
 GROUP_NAME="first"
-PYTHON_BIN="/home/first/miniconda3/envs/yolo_pi5/bin/python3"
+PYTHON_BIN="/home/first/miniconda3/envs/yolo_pi5/bin/python"
 
 echo "========================================="
 echo "开始安装 SmartHive systemd 服务"
